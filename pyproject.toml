@@ -1,0 +1,15 @@
+[project]
+name = "docx-pipeline"
+version = "0.1.0"
+description = "Markdown to enterprise DOCX pipeline with reference template and post-processing."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "python-docx>=1.1.2",
+]
+
+[project.scripts]
+docx-pipeline = "docx_pipeline.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

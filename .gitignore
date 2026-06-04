@@ -1,0 +1,15 @@
+.DS_Store
+*.swp
+~$*.docx
+
+.venv/
+.build-venv/
+__pycache__/
+*.egg-info/
+outputs/
+output*.docx
+*.pandoc.docx
+build/
+dist/
+docx-pipeline.spec
+release/
