@@ -9,6 +9,7 @@
 - 文件標題與 metadata 放在 YAML front matter。
 - 章節從 `#` 開始，子章節依序使用 `##`、`###`、`####`。
 - 不要跳級使用標題，例如 `#` 後直接接 `###`。
+- 標題不手寫章節編號（如 `# 1. 標題`、`## 1.1 標題`），編號由 docx-pipeline 依 frontmatter `numbering:` profile 生成；不編號的標題加 `<!-- no-number -->`，附錄加 `<!-- appendix -->`。
 - 指令、設定檔、HTTP request、JSON、YAML、原始輸出才使用 fenced code block。
 - 一般說明、注意事項、判斷原則、前提條件請使用段落或清單。
 - 檢查表使用 `- [ ]`，不要寫成 `[ ]`，也不要包在 code block。

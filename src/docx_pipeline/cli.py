@@ -8,6 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from .numbering import PROFILES, number_markdown
 from .postprocess import postprocess_docx
 
 
@@ -98,7 +99,25 @@ def build(args: argparse.Namespace) -> int:
     native_toc = not args.no_toc and not args.static_toc
     static_toc = not args.no_toc and args.static_toc
 
-    run_pandoc(markdown, reference_doc, intermediate, toc=native_toc)
+    numbering = args.numbering or metadata.get("numbering")
+    numbered_md: Path | None = None
+    if numbering:
+        if numbering not in PROFILES:
+            raise RuntimeError(
+                f"unknown numbering profile: {numbering} (expected one of {', '.join(PROFILES)})"
+            )
+        # 暫存檔必須與來源同目錄，pandoc 才能解析相對圖片路徑
+        numbered_md = markdown.parent / f".{markdown.stem}.numbered.md"
+        numbered_md.write_text(
+            number_markdown(markdown.read_text(encoding="utf-8"), numbering),
+            encoding="utf-8",
+        )
+
+    try:
+        run_pandoc(numbered_md or markdown, reference_doc, intermediate, toc=native_toc)
+    finally:
+        if numbered_md is not None and not args.keep_intermediate:
+            numbered_md.unlink(missing_ok=True)
     postprocess_docx(
         intermediate,
         output,
@@ -154,6 +173,12 @@ def make_parser() -> argparse.ArgumentParser:
         help="Header text for all sections. Defaults to Markdown title.",
     )
     build_parser.add_argument("--no-header", action="store_true", help="Do not write a header")
+    build_parser.add_argument(
+        "--numbering",
+        default=None,
+        choices=list(PROFILES),
+        help="Heading numbering profile. Falls back to frontmatter 'numbering:'; omit to disable.",
+    )
     build_parser.add_argument("--no-cover", action="store_true", help="Skip generated cover page")
     build_parser.add_argument("--no-toc", action="store_true", help="Skip table of contents generation")
     build_parser.add_argument("--static-toc", action="store_true", help="Use static TOC without page numbers")

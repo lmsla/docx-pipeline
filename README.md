@@ -69,18 +69,40 @@ packaging/build-macos.sh
 
 目前採用 PyInstaller `onedir` 形式，原因是它比 `onefile` 更穩定，且能避免 macOS sandbox / semaphore 啟動問題。交付時需保留整個 `release/docx-pipeline/` 資料夾，不要只複製單一 executable。
 
-## 建議 Markdown 寫法
+## 章節編號
 
-使用標準標題層級，讓 Pandoc 對應 Word 樣式：
+標題**不手寫編號**，由 pipeline 依 profile 自動生成：
+
+```bash
+docx-pipeline build input.md -o output.docx --numbering deliverable-zh   # 第一章　/ 1.1　/ 1.1.1　
+docx-pipeline build input.md -o output.docx --numbering engineering     # 1. / 1.1 / 1.1.1
+```
+
+也可在 frontmatter 指定預設（CLI 參數優先）：
+
+```yaml
+numbering: deliverable-zh
+```
+
+兩者皆未指定時不編號，舊文件行為不變。例外標記：
 
 ```md
-# 第一章 文件說明
+# 修訂記錄 <!-- no-number -->     ← 此標題不編號
+# 參考資料 <!-- appendix -->      ← 進入附錄模式：附錄 A、附錄 B…（子層 A.1）
+```
 
-## 1.1 文件目的
+## 建議 Markdown 寫法
+
+使用標準標題層級（不帶編號），讓 Pandoc 對應 Word 樣式：
+
+```md
+# 文件說明
+
+## 文件目的
 
 正文內容。
 
-## 1.2 適用對象
+## 適用對象
 
 - 開發人員
 - 測試人員
