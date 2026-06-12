@@ -11,7 +11,7 @@ numbering: deliverable-zh
 ---
 
 <!--
-標題一律不手寫章節編號，編號由 docx-pipeline 依 numbering profile 生成：
+標題可用阿拉伯數字手寫編號（1. / 1.1），轉檔時會剝除並依 numbering profile 重新生成：
   deliverable-zh → 第一章　/ 1.1　/ 1.1.1　（交付版）
   engineering    → 1. / 1.1 / 1.1.1（內部版）
 封面標題取自 frontmatter title，正文不需要再放文件標題。

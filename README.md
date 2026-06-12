@@ -71,7 +71,8 @@ packaging/build-macos.sh
 
 ## 章節編號
 
-標題**不手寫編號**，由 pipeline 依 profile 自動生成：
+Markdown 源文件可用阿拉伯數字手寫編號（`# 1. 文件說明`、`## 1.1 文件目的`），也可不寫。
+轉換時 pipeline 會**剝除手寫編號並依實際結構重新生成**——源文件跳號或重複會自動修正：
 
 ```bash
 docx-pipeline build input.md -o output.docx --numbering deliverable-zh   # 第一章　/ 1.1　/ 1.1.1　

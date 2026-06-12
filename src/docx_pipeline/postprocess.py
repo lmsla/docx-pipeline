@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile, ZIP_DEFLATED
 import datetime as dt
+import re
 import xml.etree.ElementTree as ET
 
 from docx import Document
@@ -45,15 +46,10 @@ def strip_embedded_fonts(input_docx: Path, output_docx: Path) -> None:
 
 
 def remove_font_embed_refs(font_table_xml: bytes) -> bytes:
-    ET.register_namespace("w", NS["w"])
-    ET.register_namespace("r", NS["r"])
-    root = ET.fromstring(font_table_xml)
-    for font in root.findall("w:font", NS):
-        for child in list(font):
-            local = child.tag.rsplit("}", 1)[-1]
-            if local.startswith("embed"):
-                font.remove(child)
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    # 用字串級移除而非 ElementTree round-trip：ET 重新序列化會丟失
+    # root 上的 namespace 宣告（w14/w15/w16…），但 mc:Ignorable 仍引用
+    # 這些 prefix，Word 會視為格式錯誤。
+    return re.sub(rb"<w:embed[A-Za-z]*\b[^>]*?/>", b"", font_table_xml)
 
 
 def clear_dirty_field_flags(docx_path: Path) -> None:
@@ -68,21 +64,34 @@ def clear_dirty_field_flags(docx_path: Path) -> None:
         tmp_docx.replace(docx_path)
 
 
+def get_or_insert_ordered(parent, tag: str, successors: tuple[str, ...]):
+    """取得或建立子元素，並依 OOXML schema 順序插入（插在第一個出現的 successor 之前）。
+
+    直接 append 會違反 schema 元素順序，Word 2019+ 開檔會跳「無法讀取的內容」修復提示。
+    """
+    element = parent.find(qn(tag))
+    if element is None:
+        element = OxmlElement(tag)
+        parent.insert_element_before(element, *successors)
+    return element
+
+
 def set_cell_shading(cell, fill: str) -> None:
     tc_pr = cell._tc.get_or_add_tcPr()
-    shading = tc_pr.find(qn("w:shd"))
-    if shading is None:
-        shading = OxmlElement("w:shd")
-        tc_pr.append(shading)
+    shading = get_or_insert_ordered(
+        tc_pr, "w:shd",
+        ("w:noWrap", "w:tcMar", "w:textDirection", "w:tcFitText", "w:vAlign", "w:hideMark"),
+    )
+    shading.set(qn("w:val"), "clear")
     shading.set(qn("w:fill"), fill)
 
 
 def set_table_borders(table, *, outer_color: str = "9E9E9E", inner_color: str = "D9D9D9") -> None:
     tbl_pr = table._tbl.tblPr
-    borders = tbl_pr.find(qn("w:tblBorders"))
-    if borders is None:
-        borders = OxmlElement("w:tblBorders")
-        tbl_pr.append(borders)
+    borders = get_or_insert_ordered(
+        tbl_pr, "w:tblBorders",
+        ("w:shd", "w:tblLayout", "w:tblCellMar", "w:tblLook", "w:tblCaption", "w:tblDescription"),
+    )
 
     for side in ("top", "left", "bottom", "right"):
         border = borders.find(qn(f"w:{side}"))
@@ -107,10 +116,10 @@ def set_table_borders(table, *, outer_color: str = "9E9E9E", inner_color: str = 
 
 def set_paragraph_shading(paragraph, fill: str) -> None:
     p_pr = paragraph._p.get_or_add_pPr()
-    shading = p_pr.find(qn("w:shd"))
-    if shading is None:
-        shading = OxmlElement("w:shd")
-        p_pr.append(shading)
+    shading = get_or_insert_ordered(
+        p_pr, "w:shd",
+        ("w:tabs", "w:spacing", "w:ind", "w:jc", "w:rPr", "w:sectPr"),
+    )
     shading.set(qn("w:val"), "clear")
     shading.set(qn("w:color"), "auto")
     shading.set(qn("w:fill"), fill)
@@ -118,10 +127,10 @@ def set_paragraph_shading(paragraph, fill: str) -> None:
 
 def set_paragraph_border(paragraph, color: str) -> None:
     p_pr = paragraph._p.get_or_add_pPr()
-    p_bdr = p_pr.find(qn("w:pBdr"))
-    if p_bdr is None:
-        p_bdr = OxmlElement("w:pBdr")
-        p_pr.append(p_bdr)
+    p_bdr = get_or_insert_ordered(
+        p_pr, "w:pBdr",
+        ("w:shd", "w:tabs", "w:spacing", "w:ind", "w:jc", "w:rPr", "w:sectPr"),
+    )
 
     for side in ("top", "left", "bottom", "right"):
         border = p_bdr.find(qn(f"w:{side}"))
@@ -136,10 +145,10 @@ def set_paragraph_border(paragraph, color: str) -> None:
 
 def set_cell_margins(cell, margin_dxa: int = 120) -> None:
     tc_pr = cell._tc.get_or_add_tcPr()
-    tc_mar = tc_pr.find(qn("w:tcMar"))
-    if tc_mar is None:
-        tc_mar = OxmlElement("w:tcMar")
-        tc_pr.append(tc_mar)
+    tc_mar = get_or_insert_ordered(
+        tc_pr, "w:tcMar",
+        ("w:textDirection", "w:tcFitText", "w:vAlign", "w:hideMark"),
+    )
 
     for side in ("top", "left", "bottom", "right"):
         node = tc_mar.find(qn(f"w:{side}"))

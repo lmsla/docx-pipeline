@@ -9,6 +9,13 @@ APPENDIX_MARKER = re.compile(r"\s*<!--\s*appendix\s*-->\s*")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 FENCE_RE = re.compile(r"^\s{0,3}(```|~~~)")
 
+# 手寫編號剝除規則（保守判定，避免誤傷「153 主機重建」這類標題）：
+# - `1. ` ：數字 + 點 + 空格 → 是編號
+# - `2、`：數字 + 頓號（空格可省，中文習慣）→ 是編號
+# - `1.1 ` / `2.4.3 `：多段點分式 + 空格 → 是編號
+# - `153 主機重建` / `2024 年度回顧` / `1.5G 網路`：無編號標點或無空格邊界 → 標題內容，不剝
+MANUAL_NUMBER_RE = re.compile(r"^(?:\d+(?:\.\d+)*、\s*|\d+(?:\.\d+)*\.\s+|\d+(?:\.\d+)+\s+)")
+
 CHINESE_DIGITS = "零一二三四五六七八九"
 
 
@@ -53,6 +60,8 @@ def number_markdown(text: str, profile: str) -> str:
     """為 Markdown 標題注入章節編號。
 
     - 跳過 YAML frontmatter 與 fenced code block 內的行
+    - 標題開頭的手寫編號（`1.`、`1.1`）會先剝除再重編，
+      源文件編號跳號或重複時以實際結構為準自動修正
     - `<!-- no-number -->` 標記的標題不編號（標記會移除）
     - `<!-- appendix -->` 標記的 H1 進入附錄模式（A、B、C…）
     """
@@ -101,7 +110,7 @@ def number_markdown(text: str, profile: str) -> str:
             continue
 
         level = len(heading.group(1))
-        title = heading.group(2)
+        title = MANUAL_NUMBER_RE.sub("", heading.group(2))
 
         if NO_NUMBER_MARKER.search(title):
             title = NO_NUMBER_MARKER.sub("", title).strip()
