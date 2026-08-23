@@ -77,7 +77,7 @@ jobs:
 
           codex = json.load(open(".codex-plugin/plugin.json", encoding="utf-8"))
           assert codex["name"] == "docx-pipeline"
-          assert codex["version"] == "0.1.0"
+          assert codex["version"] == plugin["version"]
           assert codex["skills"] == "./skills/"
           assert codex["author"]["name"]
           assert codex["interface"]["displayName"]
