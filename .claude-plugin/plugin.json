@@ -1,5 +1,5 @@
 {
   "name": "docx-pipeline",
-  "description": "Create, validate, and convert structured engineering notes and enterprise SOPs to DOCX.",
+  "description": "Create structured Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery.",
   "version": "0.1.0"
 }

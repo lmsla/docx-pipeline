@@ -1,0 +1,23 @@
+{
+  "name": "docx-pipeline-marketplace",
+  "owner": {
+    "name": "lmsla",
+    "url": "https://github.com/lmsla"
+  },
+  "plugins": [
+    {
+      "name": "docx-pipeline",
+      "source": ".",
+      "description": "Create Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery.",
+      "version": "0.1.0",
+      "repository": "https://github.com/lmsla/docx-pipeline",
+      "category": "documentation",
+      "tags": [
+        "markdown",
+        "engineering-note",
+        "enterprise-sop",
+        "docx"
+      ]
+    }
+  ]
+}

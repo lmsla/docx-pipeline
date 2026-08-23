@@ -1,6 +1,8 @@
 # AI Agent Markdown 寫作規則
 
-請依照以下規則撰寫筆記、SOP 或交付文件。目標是讓 Markdown 可讀、可維護，並能穩定轉換成企業格式 DOCX。
+本文件是所有 Markdown 文件共用的寫作規則，不是文件模板。目標是讓 Markdown 可讀、可維護，並能穩定轉換成企業格式 DOCX。
+
+AI agent 必須先判斷文件類型，再選擇一份模板使用；不可同時混用兩份模板的章節結構。
 
 ## 核心原則
 
@@ -18,42 +20,72 @@
 - 一般段落或清單中的 placeholder 若使用角括號，需跳脫成 `\<ELK_IP\>`，避免被 Markdown 轉換器視為 HTML tag。
 - 不要在章節之間用 `---` 當視覺分隔，DOCX 轉換時會由標題、段落間距與頁面樣式處理區隔。
 
-## 建議文件結構
+## 文件類型選擇
 
-```md
----
+先判斷文件用途，只能選擇一種模板：
+
+| 文件類型 | 使用模板 | 適用情境 |
+|---|---|---|
+| Engineering Note | `templates/engineering-note-template.md` | 技術筆記、調查、決策、工作進度 |
+| Enterprise SOP | `templates/enterprise-sop-template.md` | SOP、部署流程、客戶或主管交付 |
+
+選定後依序執行：
+
+1. 複製對應模板。
+2. 保留模板的 frontmatter 與章節結構。
+3. 依本文件的共通規則填寫內容。
+4. 執行對應文件類型的自檢。
+
+### Engineering Note
+
+重點是保留問題脈絡、可驗證證據、判斷理由、執行結果與待辦事項。內容不完整或仍在調查中時，可以保留不確定性與未完成項目。
+
+### Enterprise SOP
+
+重點是讓其他人可以依文件完成操作。內容應包含適用範圍、前提條件、操作步驟、預期結果、驗證方式、排錯方式與風險限制。
+
+## 模板使用規則
+
+- 模板是文件起始骨架，不是必須逐字保留的內容。
+- 不適用的章節可以刪除；原始技術內容、指令與證據不可刪減。
+- 不要把 Engineering Note 的輕量結構與 Enterprise SOP 的正式結構混在同一份文件中。
+- 文件完成後應移除未填寫的 placeholder 與空白章節。
+- 兩種文件都必須遵循本文件的 Markdown、圖片、表格與 code block 規則。
+
+## Frontmatter 規則
+
+所有文件應使用 YAML frontmatter。`docx-pipeline validate` 會檢查共通必要欄位；Enterprise SOP 也會檢查正式交付所需欄位。以下欄位值仍需要由 AI agent 或作者依實際內容填寫，validator 不判斷內容是否真實。
+
+### 共通欄位
+
+```yaml
 title: 文件標題
 project: 專案名稱
+document_type: 文件類型
+date: YYYY-MM-DD
+status: draft
+```
+
+### Engineering Note 建議欄位
+
+```yaml
+document_type: Engineering Note
+numbering: engineering
+```
+
+Engineering Note 的 `owner`、`audience` 與 `numbering` 可依情境省略；若要轉成正式交付文件，請改用 Enterprise SOP 模板。
+
+### Enterprise SOP 建議欄位
+
+```yaml
 document_type: SOP
 version: 1.0
-date: YYYY-MM-DD
 owner: 撰寫人或負責單位
 audience: 客戶 / 主管 / 維運人員 / 開發人員
-status: draft
----
-
-# 文件標題
-
-## 0. 文件目的
-
-# 1. 整體流程
-
-# 2. 準備事項
-
-# 3. 操作步驟
-
-# 4. 驗證方式
-
-# 5. 常見問題與排錯
-
-# 6. 收尾檢查
-
-# 7. 風險與限制
-
-# 8. 待辦事項
-
-# 9. 附錄
+numbering: deliverable-zh
 ```
+
+Enterprise SOP 的 `version`、`owner`、`audience`、`status` 與 `numbering` 不應省略。日常 Engineering Note 不需要強制套用完整 SOP metadata。
 
 ## 清單規則
 
@@ -215,6 +247,8 @@ CLI 產出的 DOCX 使用 Word 原生目錄。開啟檔案後若目錄頁碼顯�
 
 ## 交付前自檢
 
+### 共通規則
+
 - [ ] 標題層級沒有跳級
 - [ ] 一般說明沒有被包在 `text` code block
 - [ ] 檢查表皆為 `- [ ]`
@@ -225,3 +259,20 @@ CLI 產出的 DOCX 使用 Word 原生目錄。開啟檔案後若目錄頁碼顯�
 - [ ] 圖片路徑可被轉換工具讀取
 - [ ] 一般段落、清單、表格中的 `<PLACEHOLDER>` 已跳脫或改寫
 - [ ] 內容完整，沒有為了排版刪減資訊
+
+### Engineering Note
+
+- [ ] 已記錄問題背景與目前範圍
+- [ ] 已區分可驗證事實、推測與目前結論
+- [ ] 已記錄判斷依據與決策理由
+- [ ] 已記錄執行結果、未完成項目或後續待辦
+
+Engineering Note 不需要通過 Enterprise SOP 專用的操作步驟與交付檢查項目。
+
+### Enterprise SOP
+
+- [ ] 已說明目的、適用範圍與前提條件
+- [ ] 操作步驟可由其他人依序執行
+- [ ] 每個重要步驟都有預期結果或判斷標準
+- [ ] 已記錄驗證方式、常見問題與排錯方法
+- [ ] 已記錄風險、限制、收尾檢查與版本資訊

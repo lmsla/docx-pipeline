@@ -1,0 +1,5 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "docx-pipeline",
+  "description": "Create structured Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery."
+}

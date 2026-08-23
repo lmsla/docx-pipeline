@@ -1,0 +1,20 @@
+{
+  "name": "docx-pipeline",
+  "version": "0.1.0",
+  "description": "Create structured Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery.",
+  "author": {
+    "name": "docx-pipeline maintainers"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DOCX Pipeline Authoring",
+    "shortDescription": "Write structured Markdown notes and SOPs.",
+    "longDescription": "Guides an AI agent to select the correct Markdown template, preserve technical content, and produce consistent Engineering Note or Enterprise SOP files. DOCX conversion remains an external manual or CI workflow.",
+    "developerName": "docx-pipeline maintainers",
+    "category": "Productivity",
+    "capabilities": [
+      "Write"
+    ],
+    "defaultPrompt": "整理這段技術討論，依 docx-pipeline Markdown 規則產出文件。"
+  }
+}

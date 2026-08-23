@@ -1,0 +1,92 @@
+name: Markdown quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Markdown (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: python -m pip install --upgrade pip && python -m pip install -e .
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate valid fixtures
+        run: |
+          docx-pipeline validate tests/fixtures/valid/engineering-note.md
+          docx-pipeline validate tests/fixtures/valid/enterprise-sop.md
+
+      - name: Reject invalid fixtures
+        run: |
+          for file in tests/fixtures/invalid/*.md; do
+            if docx-pipeline validate "$file"; then
+              echo "expected validation failure: $file" >&2
+              exit 1
+            fi
+          done
+
+      - name: Check Claude Code Plugin layout
+        run: |
+          test -s skills/docx-authoring/SKILL.md
+          test -s .claude-plugin/plugin.json
+          test -s .claude-plugin/marketplace.json
+          python - <<'PY'
+          import json
+
+          plugin = json.load(open(".claude-plugin/plugin.json", encoding="utf-8"))
+          assert plugin["name"] == "docx-pipeline"
+          assert plugin["version"]
+
+          marketplace = json.load(open(".claude-plugin/marketplace.json", encoding="utf-8"))
+          assert marketplace["name"] == "docx-pipeline-marketplace"
+          entries = [item for item in marketplace["plugins"] if item["name"] == "docx-pipeline"]
+          assert len(entries) == 1
+          assert entries[0]["source"] == "."
+          assert entries[0]["version"] == plugin["version"]
+          PY
+
+      - name: Check AI agent Plugin manifests
+        run: |
+          test -s plugin.json
+          test -s .codex-plugin/plugin.json
+          python - <<'PY'
+          import json
+
+          antigravity = json.load(open("plugin.json", encoding="utf-8"))
+          assert antigravity["name"] == "docx-pipeline"
+          assert antigravity["description"]
+
+          codex = json.load(open(".codex-plugin/plugin.json", encoding="utf-8"))
+          assert codex["name"] == "docx-pipeline"
+          assert codex["version"] == "0.1.0"
+          assert codex["skills"] == "./skills/"
+          assert codex["author"]["name"]
+          assert codex["interface"]["displayName"]
+          assert codex["interface"]["defaultPrompt"]
+          PY
+
+      - name: Check Skill resources
+        run: |
+          test -s templates/ai-agent-markdown-rules.md
+          test -s templates/engineering-note-template.md
+          test -s templates/enterprise-sop-template.md
+          test -s docs/skill-installation.md

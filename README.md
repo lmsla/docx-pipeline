@@ -6,7 +6,47 @@ Markdown 轉企業交付 DOCX 的小型 CLI。第一版流程是：
 Markdown -> pandoc 套 reference.docx -> python-docx 後處理 -> output.docx
 ```
 
+## 文件入口
+
+- [整合規格](docs/spec.md)：CLI、Markdown、DOCX、模板、打包與整合契約
+- [AI agent Markdown 規則](templates/ai-agent-markdown-rules.md)：筆記與 SOP 的撰寫規則
+- [工程筆記模板](templates/engineering-note-template.md)：技術筆記、調查與決策紀錄
+- [企業 SOP 模板](templates/enterprise-sop-template.md)：可直接複製使用的文件骨架
+- [Claude Code Skill](skills/docx-authoring/SKILL.md)：引導 AI 選擇模板與整理文件
+- [三平台 Skill 安裝與驗收](docs/skill-installation.md)：Claude Code、Antigravity、Codex 的封裝與範圍
+
 ## 使用方式
+
+### AI agent Skill（只產出 Markdown）
+
+本 repo 同時提供三個 AI agent 平台的 Skill manifest：
+
+```text
+.claude-plugin/plugin.json       # Claude Code
+plugin.json                      # Antigravity
+.codex-plugin/plugin.json        # Codex
+.claude-plugin/marketplace.json  # Claude Code private Marketplace
+```
+
+三個平台共用 `skills/docx-authoring/SKILL.md`、`templates/` 與相同的 Markdown 規則。Skill 只負責整理與產出 Markdown，不會自行執行 `docx-pipeline`、Pandoc 或 DOCX 轉換。詳細安裝與人工驗收請參考 [Skill 安裝與驗收](docs/skill-installation.md)。
+
+### Claude Code 持久安裝
+
+`claude --plugin-dir .` 只適合維護者做單次本地測試，不是日常安裝方式。正式使用時，在 Claude Code 中一次設定 private Marketplace 與 `User scope` Plugin：
+
+```text
+/plugin marketplace add lmsla/docx-pipeline
+/plugin install docx-pipeline@docx-pipeline-marketplace
+```
+
+安裝後重啟 Claude Code 不需要再次指定目錄。更新時執行：
+
+```text
+/plugin marketplace update docx-pipeline-marketplace
+/reload-plugins
+```
+
+每台電腦仍須具備 private repository 的 GitHub 權限；SSH 安裝需要可用的 SSH key 與 `ssh-agent`。
 
 ### 方案 B：Release Binary
 
@@ -48,6 +88,19 @@ docx-pipeline build /path/to/input.md -o /path/to/output.docx
 ```bash
 docx-pipeline doctor
 ```
+
+### Markdown 驗證
+
+在轉檔前可先檢查 frontmatter、標題層級、code block、表格、圖片路徑與文件類型：
+
+```bash
+docx-pipeline validate input.md
+docx-pipeline validate input.md --type enterprise-sop
+```
+
+驗證器只能檢查可由程式判斷的結構，不能判斷技術內容是否正確或事實是否已完成驗證。
+
+GitHub Actions workflow 位於 `.github/workflows/markdown-quality.yml`，會執行 unit tests、合法案例與錯誤案例驗證。
 
 ### 開發模式
 
@@ -151,3 +204,7 @@ curl -k https://<ELK_IP>:9200
 - 字型設定
 
 目前此 repo 不內建文件內容。請把企業模板另存為 `templates/reference.docx`。
+
+## AI agent Plugin 封裝
+
+repo 根目錄包含 Claude Code、Antigravity 與 Codex 的 Plugin manifest，以及共用的 `skills/docx-authoring/SKILL.md`。Plugin 負責引導 AI 使用規則與模板；`docx-pipeline` CLI 負責下游驗證與 DOCX 轉換。兩者版本應一起管理，但 CLI 不由 Skill 自動觸發，也不要在 Skill 中複製模板內容。
