@@ -111,7 +111,7 @@ Skill 不可以在本工作流中：
 2. Skill 能被正確啟用。
 3. Agent 能選擇正確的文件類型。
 4. Agent 會讀取隨附規則與模板。
-5. 產出的 Markdown 包含正確 frontmatter、標題層級、code block 與清單格式。
+5. 產出的 Markdown 包含正確 frontmatter、標題層級、code block 與清單格式，且沒有保留整份文件的外層 Markdown fence。
 6. Agent 不會自行執行 CLI 或產出 DOCX。
 
 Claude Code 另須驗收：

@@ -116,6 +116,7 @@ docx-pipeline validate <input.md> [--type engineering-note|enterprise-sop]
 - 必要 frontmatter 欄位與文件類型。
 - H1 起始、標題層級不可跳級與文件類型的核心章節。
 - fenced code block 必須有語言標籤且必須閉合。
+- 整份文件不得保留聊天傳輸用的外層 `markdown` fenced code block；若誤存，回傳 `MD012`。
 - Markdown pipe table 的表頭、分隔列與資料列欄數。
 - 相對圖片路徑是否存在；HTTP、HTTPS 與 data URL 不由本命令下載或檢查。
 - 一般文字中的未跳脫 placeholder 角括號。
@@ -231,6 +232,8 @@ curl -k https://ELK_IP:9200/_cluster/health?pretty
 ````
 
 工具會將 Pandoc 產生的 `Source Code` 段落套用灰底、邊框與等寬字型。語言標籤是輸入規範，但目前不保證產生語言名稱標籤或語法高亮。
+
+聊天介面若需要將完整 Markdown 包在回覆中，外層 fence 必須比內文最長 fence 更長；內文使用三個反引號時，外層至少使用四個反引號。這只是傳輸包裝，不能寫入交付的 `.md` 檔。
 
 ### 3.5 表格
 
@@ -482,7 +485,7 @@ Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式
 - [ ] `engineering` 與 `deliverable-zh` 編號結果符合預期。
 - [ ] 缺少輸入檔或 Pandoc 時，`build` 會回傳非零退出碼。
 - [ ] 合法的 Engineering Note 與 Enterprise SOP 可通過 `validate`。
-- [ ] 結構錯誤、缺圖、未閉合 code block 與不一致表格會使 `validate` 回傳非零退出碼。
+- [ ] 結構錯誤、缺圖、未閉合 code block、外層 Markdown 包裝與不一致表格會使 `validate` 回傳非零退出碼。
 - [ ] release 目錄在目標 macOS 環境可直接執行，且 `_internal` 內容完整。
 
 ## 11. 文件分工

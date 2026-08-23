@@ -26,6 +26,7 @@ description: Create or revise Engineering Note and Enterprise SOP Markdown using
 - Frontmatter 必須保留，並依文件類型填寫必要欄位。
 - 正文從 H1 開始，標題不可跳級；不要手動製作目錄或用 `---` 當視覺分隔線。
 - 指令、設定、HTTP request、JSON、YAML 與原始輸出使用帶語言標籤的 fenced code block。
+- 寫入 `.md` 的內容必須是原始 Markdown，不得把整份文件包在外層 `markdown` fenced code block。若聊天回覆為了傳輸而使用外層 fence，外層至少使用四個反引號，並在存檔前移除。
 - 表格使用標準 Markdown pipe table，表格前後保留空行。
 - 圖片使用相對路徑與空 alt，例如 `![](images/example.png)`；圖說另起一行。
 - 一般文字中的 placeholder 要跳脫角括號，例如 `\<ELK_IP\>`；code block 內不需要跳脫。

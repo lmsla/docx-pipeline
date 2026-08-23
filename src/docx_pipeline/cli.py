@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from .numbering import PROFILES, number_markdown
-from .postprocess import postprocess_docx
+from .validator import validate_markdown
 
 
 def resource_path(relative_path: str) -> Path:
@@ -77,6 +77,8 @@ def run_pandoc(markdown: Path, reference_doc: Path, output: Path, toc: bool) -> 
 
 
 def build(args: argparse.Namespace) -> int:
+    from .postprocess import postprocess_docx
+
     markdown = Path(args.markdown).expanduser().resolve()
     reference_doc = (
         Path(args.reference_doc).expanduser().resolve()
@@ -155,6 +157,25 @@ def doctor(_: argparse.Namespace) -> int:
     return 0
 
 
+def validate(args: argparse.Namespace) -> int:
+    markdown = Path(args.markdown).expanduser().resolve()
+    if not markdown.exists():
+        raise RuntimeError(f"Markdown file not found: {markdown}")
+
+    try:
+        issues = validate_markdown(markdown, document_type=args.document_type)
+    except OSError as exc:
+        raise RuntimeError(f"Cannot read Markdown file: {markdown}: {exc}") from exc
+    for issue in issues:
+        print(f"{issue.code}: {markdown}:{issue.line}: {issue.message}", file=sys.stderr)
+    if issues:
+        print(f"Validation failed: {len(issues)} issue(s).", file=sys.stderr)
+        return 1
+
+    print(f"Valid Markdown: {markdown}")
+    return 0
+
+
 def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="docx-pipeline")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -190,6 +211,17 @@ def make_parser() -> argparse.ArgumentParser:
 
     doctor_parser = subparsers.add_parser("doctor", help="Check local dependencies")
     doctor_parser.set_defaults(func=doctor)
+
+    validate_parser = subparsers.add_parser("validate", help="Validate Markdown structure and assets")
+    validate_parser.add_argument("markdown", help="Input Markdown file")
+    validate_parser.add_argument(
+        "--type",
+        dest="document_type",
+        choices=("engineering-note", "enterprise-sop"),
+        default=None,
+        help="Document type override when frontmatter document_type is unavailable or custom",
+    )
+    validate_parser.set_defaults(func=validate)
 
     return parser
 

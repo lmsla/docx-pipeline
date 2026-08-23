@@ -4,10 +4,12 @@
 
 .venv/
 .build-venv/
+.pyinstaller-cache/
 __pycache__/
 *.egg-info/
 outputs/
 output*.docx
+test.docx
 *.pandoc.docx
 build/
 dist/

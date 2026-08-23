@@ -13,6 +13,8 @@ AI agent 必須先判斷文件類型，再選擇一份模板使用；不可同�
 - 不要跳級使用標題，例如 `#` 後直接接 `###`。
 - 標題可用阿拉伯數字手寫編號（`# 1. 標題`、`## 1.1 標題`）或不寫；docx-pipeline 轉換時會剝除手寫編號、依實際結構重新生成（profile 由 frontmatter `numbering:` 指定），跳號會自動修正。不編號的標題加 `<!-- no-number -->`，附錄加 `<!-- appendix -->`。
 - 指令、設定檔、HTTP request、JSON、YAML、原始輸出才使用 fenced code block。
+- 交付的 `.md` 必須是原始 Markdown，不得把整份文件再包在外層、標示為 `markdown` 的 fenced code block；否則內文的 code block 會被錯誤截斷。
+- 若聊天介面為了傳輸完整 Markdown 而需要外層包裝，外層反引號數量必須多於文件內最長的 fence，且存檔前必須移除外層包裝。內文使用三個反引號時，外層至少使用四個反引號。
 - 一般說明、注意事項、判斷原則、前提條件請使用段落或清單。
 - 檢查表使用 `- [ ]`，不要寫成 `[ ]`，也不要包在 code block。
 - 流程步驟使用真正的 numbered list。
@@ -251,6 +253,7 @@ CLI 產出的 DOCX 使用 Word 原生目錄。開啟檔案後若目錄頁碼顯�
 
 - [ ] 標題層級沒有跳級
 - [ ] 一般說明沒有被包在 `text` code block
+- [ ] 整份文件沒有保留外層 `markdown` fenced code block
 - [ ] 檢查表皆為 `- [ ]`
 - [ ] 指令 code block 有正確語言標籤
 - [ ] 表格欄位數一致

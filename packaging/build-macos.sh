@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PYTHON="${PYTHON:-python3}"
 VENV="$ROOT/.build-venv"
 PANDOC="${PANDOC:-$(command -v pandoc || true)}"
+PYINSTALLER_CONFIG_DIR="${PYINSTALLER_CONFIG_DIR:-$ROOT/.pyinstaller-cache}"
+export PYINSTALLER_CONFIG_DIR
 
 if [[ -z "$PANDOC" || ! -x "$PANDOC" ]]; then
   echo "error: pandoc not found. Install it first or set PANDOC=/path/to/pandoc." >&2
