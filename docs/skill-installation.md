@@ -59,7 +59,16 @@ python3 -c "import json;print(json.load(open('$HOME/.claude/plugins/known_market
 
 ```text
 /plugin marketplace update docx-pipeline-marketplace
-/reload-plugins
+/plugin update docx-pipeline@docx-pipeline-marketplace
+```
+
+`marketplace update` 只刷新 Marketplace 目錄，**不會**升級已安裝的 Plugin；
+必須再執行 `plugin update` 才會真正取得新版本，之後重啟 Claude Code 套用。
+對應的 CLI 形式：
+
+```bash
+claude plugin marketplace update docx-pipeline-marketplace
+claude plugin update docx-pipeline@docx-pipeline-marketplace
 ```
 
 #### 更新以版本號為準，不是以 commit 為準
