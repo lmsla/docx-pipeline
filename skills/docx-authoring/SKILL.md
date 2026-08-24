@@ -1,6 +1,6 @@
 ---
 name: docx-authoring
-description: Create or revise Engineering Note and Enterprise SOP Markdown using the bundled docx-pipeline templates and rules. Use when the user asks to record a technical discussion, document an investigation or decision, create an SOP, or standardize Markdown for later delivery.
+description: Create or revise Engineering Note and Enterprise SOP Markdown using the bundled docx-pipeline templates and rules. Use ONLY when the user explicitly requests that a document be produced or revised — for example "整理成筆記", "寫成 SOP", "幫我記錄", "turn this into a note", "write this up as an SOP". Do NOT use merely because a technical discussion, investigation, or troubleshooting is taking place in the conversation; wait for an explicit request to produce or revise a document.
 ---
 
 # docx-pipeline 文件編寫

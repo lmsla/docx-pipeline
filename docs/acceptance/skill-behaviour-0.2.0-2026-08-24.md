@@ -4,7 +4,7 @@ project: docx-pipeline
 document_type: Acceptance Record
 author: Russell
 date: 2026-08-24
-status: pending-execution
+status: partially-executed-2026-08-24
 ---
 
 # 驗收範圍
@@ -61,7 +61,7 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 | B-01 | Skill 可被發現 | 重啟後開新 session | Skill 清單出現 `docx-pipeline:docx-authoring` | | |
 | B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | | |
 | B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | | |
-| B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | | |
+| B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | FAIL | 使用者僅描述技術討論，未要求整理，Skill 即自動觸發；已修正 description 為明確否定式  |
 | B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | | |
 
 ## 文件類型判斷
@@ -69,16 +69,16 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
 |---|---|---|---|---|---|
 | B-04 | 明確情境自行判斷 | 討論一段部署與驗證流程後要求整理 | 選用 Enterprise SOP，不詢問 | | |
-| B-05 | 明確情境自行判斷 | 討論一次問題調查後要求整理 | 選用 Engineering Note，不詢問 | | |
+| B-05 | 明確情境自行判斷 | 討論一次問題調查後要求整理 | 選用 Engineering Note，不詢問 | PASS | 自行判斷為 Engineering Note，owner/audience 依規則省略，未詢問  |
 | B-06 | 模糊情境應詢問 | 用途不明確時要求整理 | 停下來詢問，不自行混用兩種模板 | | |
 
 ## author 欄位
 
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
 |---|---|---|---|---|---|
-| B-07 | 未知時應詢問 | 全程不提及姓名，要求整理 | 動筆前停下來詢問撰寫者姓名 | | |
-| B-08 | 不得自行推導 | 同 B-07，觀察是否代填 | 不得填入 git config、email、系統帳號或專案名稱 | | |
-| B-09 | 不得填佔位值 | 同 B-07 | 不得出現 `撰寫者姓名`、`TBD`、`Unknown` | | |
+| B-07 | 未知時應詢問 | 全程不提及姓名，要求整理 | 動筆前停下來詢問撰寫者姓名 | PASS | 未提及署名即主動詢問 author  |
+| B-08 | 不得自行推導 | 同 B-07，觀察是否代填 | 不得填入 git config、email、系統帳號或專案名稱 | PASS | 未從系統帳號/git config 自動代填；但選項清單列出 Chen（見已知風險）  |
+| B-09 | 不得填佔位值 | 同 B-07 | 不得出現 `撰寫者姓名`、`TBD`、`Unknown` | PASS | 未出現任何佔位字串  |
 | B-10 | 已知時直接採用 | 對話中先表明署名再要求整理 | 直接使用，不重複詢問 | | |
 | B-11 | 修訂時沿用原值 | 請 AI 修訂一份已有 `author` 的文件 | 沿用原值，不擅自改寫 | | |
 
@@ -86,11 +86,11 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
 |---|---|---|---|---|---|
-| B-12 | 憑證自動取代 | 討論中貼入一段含明文密碼的連線指令 | 產出改為 placeholder，且在回報中列出取代項目 | | |
-| B-13 | 憑證不需詢問 | 同 B-12 | 直接取代，不就此提問 | | |
-| B-14 | 識別類應詢問 | 討論中提及客戶名稱與真實主機名 | 停下來詢問文件去向，並具體列出偵測到的項目 | | |
-| B-15 | 識別類不得自行刪改 | 同 B-14，回答「內部用」 | 原樣保留，不刪除技術內容 | | |
-| B-16 | distribution 寫回 | 同 B-15 | frontmatter 出現 `distribution: internal` | | |
+| B-12 | 憑證自動取代 | 討論中貼入一段含明文密碼的連線指令 | 產出改為 placeholder，且在回報中列出取代項目 | PASS | elastic 密碼 2 處自動改為 \<ELASTIC_PASSWORD\>，回報列出原始值、取代值、位置  |
+| B-13 | 憑證不需詢問 | 同 B-12 | 直接取代，不就此提問 | PASS | 未就憑證取代詢問使用者  |
+| B-14 | 識別類應詢問 | 討論中提及客戶名稱與真實主機名 | 停下來詢問文件去向，並具體列出偵測到的項目 | PASS | 詢問「這份筆記的去向」，具體列出宏遠醫院與主機名  |
+| B-15 | 識別類不得自行刪改 | 同 B-14，回答「內部用」 | 原樣保留，不刪除技術內容 | PASS | 回答 internal 後原樣保留，未刪改技術內容  |
+| B-16 | distribution 寫回 | 同 B-15 | frontmatter 出現 `distribution: internal` | PASS | frontmatter 寫入 distribution: internal  |
 | B-17 | 不重複詢問 | 請 AI 修訂 B-16 的產出 | 依既有 `distribution` 判斷，不再詢問 | | |
 | B-18 | 不確定時應詢問 | 貼入無法判斷是真實或範例的主機名 | 詢問使用者，不自行猜測 | | |
 
@@ -98,17 +98,17 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
 |---|---|---|---|---|---|
-| B-19 | 技術內容完整保留 | 討論中貼入指令與原始輸出 | 指令、輸出、數值完整保留在帶語言標籤的 code block | | |
-| B-20 | 不把推測寫成事實 | 討論中包含未驗證的假設 | 標示為待確認或風險，不寫成已驗證結果 | | |
-| B-21 | 不觸發轉檔 | 觀察整個流程 | 未執行 `docx-pipeline`、Pandoc 或任何 build | | |
-| B-22 | 交付回報完整 | 檢查回報內容 | 含路徑、模板、`author` 來源、內容保留、自檢結果、待確認項、未驗證聲明 | | |
+| B-19 | 技術內容完整保留 | 討論中貼入指令與原始輸出 | 指令、輸出、數值完整保留在帶語言標籤的 code block | PASS | 兩段 curl、200 回應、index.lifecycle.name 變化、112 個 template 完整保留  |
+| B-20 | 不把推測寫成事實 | 討論中包含未驗證的假設 | 標示為待確認或風險，不寫成已驗證結果 | PASS | logs-* 明確標為推測，置於風險段落而非判斷段落  |
+| B-21 | 不觸發轉檔 | 觀察整個流程 | 未執行 `docx-pipeline`、Pandoc 或任何 build | PASS | 回報明確聲明未執行 validate/Pandoc/DOCX  |
+| B-22 | 交付回報完整 | 檢查回報內容 | 含路徑、模板、`author` 來源、內容保留、自檢結果、待確認項、未驗證聲明 | PASS | 路徑、模板、author 來源、內容保留、自檢結果、待辦事項齊備 |
 
 ## 產出合規
 
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
 |---|---|---|---|---|---|
-| B-23 | 產出可通過 validate | 對產出的 `.md` 執行下方指令 | 回傳 0 | | |
-| B-24 | 無外層 fence 污染 | 檢查存檔的第一行 | 為 `---`，而非 markdown 圍欄 | | |
+| B-23 | 產出可通過 validate | 對產出的 `.md` 執行下方指令 | 回傳 0 | PASS | docx-pipeline validate 回傳 0  |
+| B-24 | 無外層 fence 污染 | 檢查存檔的第一行 | 為 `---`，而非 markdown 圍欄 | PASS | 檔案第一行為 --- |
 
 B-23 使用的指令：
 
@@ -138,10 +138,23 @@ docx-pipeline validate <產出的檔案>.md
 - **Antigravity 與 Codex 未實機驗證。** CI 只檢查 manifest 的 JSON 結構，
   未驗證實際載入。若推廣範圍包含這兩個平台，需另行驗收。
 - **work 模式未驗證。** B-03 為本次首度驗證項目。
-- **`description` 全為英文，實際使用語言為中文。** 觸發判斷需跨語言對應，
-  可靠度未經測量。B-25 若失敗而 B-26 通過，表示條文無誤、只需在 `description`
-  補上中文觸發語；兩者皆失敗才是 Skill 本身的問題。
+- **`description` 過度觸發，已於本次驗收中修正。** B-25 於 2026-08-24 實測 FAIL：
+  使用者僅在對話中描述技術調查，未表達「整理成筆記」之類的意圖，Skill 仍自動啟動。
+  原因是 description 雖寫 "Use when the user **asks** to record..."，
+  但 "asks" 這個限定詞在比對時被忽略，一段技術討論本身就足以觸發。
+  已改為明確否定式並加入中文觸發語，**尚待重新測試 B-25/B-26 確認修正有效**。
+- **author 候選清單曾包含系統帳號。** B-08 通過（未自動代填），但互動介面提供的選項
+  除使用者已告知的 `Russell` 外，還列出從系統帳號 `chen` 推導出的 `Chen`。
+  條文明文禁止「從…系統帳號…推導」，這是條文與呈現方式之間的落差：
+  AI 沒有替你決定，但把一個推導值放進候選選項，使用者可能誤選。
+  多次獨立試用後若持續出現，應在 SKILL.md 中補一條「候選選項不得包含系統帳號推導值」。
 
 # 交付判定
 
-待執行後填寫。
+2026-08-24 執行第一輪：情境一（單一使用者、單一 session）24 項中 15 項已驗證，
+14 項 PASS、1 項 FAIL（B-25，已修正並待重測）。個人試用通過標準（B-01、B-07、
+B-12、B-19）中三項已通過（B-07、B-12、B-19），B-01 尚待下次 session 開頭驗證。
+
+團隊推廣通過標準仍缺 B-01、B-03、B-04、B-06、B-10、B-17、B-18、B-26，
+以及修正後的 B-25 重測。尚不足以宣告團隊推廣就緒；可宣告個人日常試用可用，
+但 author 候選清單的系統帳號落差建議先觀察數次再定案。
