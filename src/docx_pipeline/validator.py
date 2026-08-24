@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import os
 import re
 from urllib.parse import urlparse
 
@@ -67,6 +68,59 @@ REDACTED_HINTS = (
 def _looks_redacted(value: str) -> bool:
     lowered = value.lower()
     return any(hint in lowered for hint in REDACTED_HINTS)
+
+
+# 識別類偵測。內部文件本來就需要主機名、IP 這類技術脈絡，因此嚴格程度綁在
+# frontmatter 的 distribution：internal（或未指定）只是資訊，customer / public 才是錯誤。
+DENYLIST_FILENAME = ".docx-pipeline-denylist"
+EXTERNAL_DISTRIBUTIONS = {"customer", "public", "external"}
+
+EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+PRIVATE_IP_RE = re.compile(
+    r"\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+    r"|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}"
+    r"|192\.168\.\d{1,3}\.\d{1,3})\b"
+)
+# 說明文件常用的示範網域，不視為外洩
+EXAMPLE_EMAIL_DOMAINS = ("example.com", "example.org", "example.net", "test.com", "localhost")
+
+
+def _is_external(metadata: dict[str, str]) -> bool:
+    return metadata.get("distribution", "").strip().lower() in EXTERNAL_DISTRIBUTIONS
+
+
+def load_denylist(markdown: Path, explicit: Path | None = None) -> list[str]:
+    """載入組織自訂的敏感詞清單。
+
+    清單本身就是敏感資料（等同一份客戶名單），因此不隨 repo 散布，
+    而是由各組織放在本機。尋找順序：`--denylist` > 環境變數 >
+    自 Markdown 所在目錄逐層向上尋找 `.docx-pipeline-denylist`。
+    """
+    candidates: list[Path] = []
+    if explicit is not None:
+        candidates.append(explicit)
+    env_value = os.environ.get("DOCX_PIPELINE_DENYLIST")
+    if env_value:
+        candidates.append(Path(env_value).expanduser())
+
+    directory = markdown.parent.resolve()
+    for parent in [directory, *directory.parents]:
+        candidates.append(parent / DENYLIST_FILENAME)
+
+    for candidate in candidates:
+        try:
+            if not candidate.is_file():
+                continue
+            terms = []
+            for line in candidate.read_text(encoding="utf-8").splitlines():
+                term = line.split("#", 1)[0].strip()
+                # 單字元詞誤報率太高，直接忽略
+                if len(term) >= 2:
+                    terms.append(term)
+            return terms
+        except OSError:
+            continue
+    return []
 
 
 @dataclass(frozen=True)
@@ -380,7 +434,52 @@ def _scan_secrets(lines: list[str], start: int) -> list[ValidationIssue]:
     return issues
 
 
-def validate_markdown(markdown: Path, document_type: str | None = None) -> list[ValidationIssue]:
+def _scan_identifying_info(
+    lines: list[str], start: int, denylist: list[str], external: bool
+) -> list[ValidationIssue]:
+    """偵測識別類資訊。
+
+    僅在文件標示為對外（`distribution: customer` / `public`）時回報為問題；
+    內部文件保留主機名、內網 IP 這類技術脈絡是正常且必要的。
+    """
+    if not external:
+        return []
+
+    issues: list[ValidationIssue] = []
+    lowered_terms = [(term, term.lower()) for term in denylist]
+
+    for index in range(start, len(lines)):
+        line = lines[index]
+        line_number = index + 1
+        lowered_line = line.lower()
+
+        for original, lowered in lowered_terms:
+            if lowered in lowered_line:
+                issues.append(
+                    _issue("MD064", line_number, f"對外文件含敏感詞「{original}」，請改用代稱")
+                )
+                break
+
+        match = EMAIL_RE.search(line)
+        if match and not any(d in match.group(0).lower() for d in EXAMPLE_EMAIL_DOMAINS):
+            issues.append(
+                _issue("MD065", line_number, f"對外文件含 email 位址：{match.group(0)}")
+            )
+
+        match = PRIVATE_IP_RE.search(line)
+        if match:
+            issues.append(
+                _issue("MD066", line_number, f"對外文件含內網 IP：{match.group(0)}")
+            )
+
+    return issues
+
+
+def validate_markdown(
+    markdown: Path,
+    document_type: str | None = None,
+    denylist_path: Path | None = None,
+) -> list[ValidationIssue]:
     try:
         text = markdown.read_text(encoding="utf-8")
     except UnicodeDecodeError:
@@ -425,6 +524,15 @@ def validate_markdown(markdown: Path, document_type: str | None = None) -> list[
     issues.extend(_scan_tables(lines, body_start, code_lines))
     issues.extend(_scan_images_and_placeholders(lines, body_start, code_lines, markdown))
     issues.extend(_scan_secrets(lines, body_start))
+    issues.extend(
+        # 從第 0 行掃起：frontmatter 的 project、title 同樣會外洩客戶名稱
+        _scan_identifying_info(
+            lines,
+            0,
+            load_denylist(markdown, denylist_path),
+            _is_external(metadata),
+        )
+    )
 
     if selected_type is not None:
         heading_names = {name for _, name in headings}

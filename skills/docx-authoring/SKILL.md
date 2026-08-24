@@ -32,7 +32,7 @@ description: Create or revise Engineering Note and Enterprise SOP Markdown using
 
    **憑證類——一律不得寫入，直接以 placeholder 取代，不需要詢問：**
    密碼、API key、token、session cookie、憑證私鑰、連線字串或指令中的明文帳密
-   （例如 `curl -u user:pass`）。取代後在回報中列出取代了哪些項目，讓使用者知道
+   （例如 `curl -u <帳號>:<密碼>` 這種把密碼直接寫進指令的形式）。取代後在回報中列出取代了哪些項目，讓使用者知道
    原始值需要另循安全管道傳遞。
 
    **識別類——標示並詢問使用者，不得自行刪改：**

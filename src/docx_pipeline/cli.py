@@ -176,7 +176,11 @@ def validate(args: argparse.Namespace) -> int:
         raise RuntimeError(f"Markdown file not found: {markdown}")
 
     try:
-        issues = validate_markdown(markdown, document_type=args.document_type)
+        issues = validate_markdown(
+            markdown,
+            document_type=args.document_type,
+            denylist_path=Path(args.denylist).expanduser() if args.denylist else None,
+        )
     except OSError as exc:
         raise RuntimeError(f"Cannot read Markdown file: {markdown}: {exc}") from exc
     for issue in issues:
@@ -233,6 +237,14 @@ def make_parser() -> argparse.ArgumentParser:
         choices=("engineering-note", "enterprise-sop"),
         default=None,
         help="Document type override when frontmatter document_type is unavailable or custom",
+    )
+    validate_parser.add_argument(
+        "--denylist",
+        default=None,
+        help=(
+            "組織自訂敏感詞清單。未指定時依序尋找 DOCX_PIPELINE_DENYLIST 環境變數，"
+            "以及自 Markdown 所在目錄向上的 .docx-pipeline-denylist"
+        ),
     )
     validate_parser.set_defaults(func=validate)
 

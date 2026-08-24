@@ -122,8 +122,17 @@ curl -u elastic:\<ELASTIC_PASSWORD\> https://\<ELK_IP\>:9200
 export API_KEY="${ELASTIC_API_KEY}"
 ```
 
-`docx-pipeline validate` 會擋下寫死的憑證（`MD060`–`MD063`），但只涵蓋機器可判斷的樣式。
-客戶名稱、主機名這類語意判斷無法自動化，仍須由 AI 標示、由人確認。
+`docx-pipeline validate` 會擋下寫死的憑證（`MD060`–`MD063`）。
+
+識別類則需要組織自備敏感詞清單才擋得住——「這是不是客戶名」沒有通用樣式可判斷。
+把客戶簡稱、全名、內部網域與專案代號寫進 `.docx-pipeline-denylist`（放在文件目錄或
+任一上層目錄，可參考 `templates/denylist.example`），validate 就會在文件標示為對外時
+擋下 `MD064`；email 與內網 IP 另有通用偵測（`MD065`、`MD066`），不需要設定。
+
+清單內容等同一份客戶名單，**絕不可進入版控**；`.docx-pipeline-denylist` 已列入
+`.gitignore`，CI 也會擋下誤 commit。
+
+即使如此，未列入清單的客戶名稱仍然抓不到，AI 標示與人工複核依然必要。
 
 識別類資訊在內部文件中往往是必要的技術脈絡，**不可因為看起來敏感就刪除**，
 那會破壞文件的可重現性。是否去識別化取決於文件去向，可用選填的 `distribution` 欄位記錄：
@@ -132,7 +141,8 @@ export API_KEY="${ELASTIC_API_KEY}"
 distribution: internal   # internal（預設）/ customer / public
 ```
 
-`distribution: internal` 通常原樣保留；`customer` 與 `public` 應先確認是否改用代稱。
+`distribution: internal`（或未指定）通常原樣保留，validate 不會因識別類資訊報錯；
+`customer` 與 `public` 會啟用 `MD064`–`MD066` 檢查。
 
 ## 清單規則
 

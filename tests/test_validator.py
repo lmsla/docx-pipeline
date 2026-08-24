@@ -212,6 +212,56 @@ export API_KEY="${ELASTIC_API_KEY}"
             codes = {issue.code for issue in validate_markdown(markdown)}
             self.assertFalse({c for c in codes if c.startswith("MD06")})
 
+    def _identifying_doc(self, directory, distribution):
+        markdown = Path(directory) / "note.md"
+        markdown.write_text(
+            f"""---
+title: 測試筆記
+project: 範例客戶 POC
+document_type: Engineering Note
+author: Russell
+date: 2026-08-23
+status: draft
+distribution: {distribution}
+---
+
+# 摘要
+
+範例客戶的正式環境 10.20.30.40，窗口 wang@customer.com.tw。
+
+# 背景與問題
+
+問題描述。
+""",
+            encoding="utf-8",
+        )
+        (Path(directory) / ".docx-pipeline-denylist").write_text(
+            "# 清單\n範例客戶\n", encoding="utf-8"
+        )
+        return markdown
+
+    def test_identifying_info_allowed_for_internal_documents(self):
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = self._identifying_doc(directory, "internal")
+            codes = {issue.code for issue in validate_markdown(markdown)}
+            self.assertFalse({c for c in codes if c in {"MD064", "MD065", "MD066"}})
+
+    def test_identifying_info_rejected_for_external_documents(self):
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = self._identifying_doc(directory, "public")
+            codes = {issue.code for issue in validate_markdown(markdown)}
+            self.assertIn("MD064", codes)
+            self.assertIn("MD065", codes)
+            self.assertIn("MD066", codes)
+
+    def test_denylist_matches_frontmatter(self):
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = self._identifying_doc(directory, "customer")
+            hits = [i for i in validate_markdown(markdown) if i.code == "MD064"]
+            # project: 範例客戶 POC 位於 frontmatter，必須被涵蓋
+            self.assertTrue(any(i.line <= 8 for i in hits))
+
+
 
 if __name__ == "__main__":
     unittest.main()

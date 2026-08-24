@@ -122,6 +122,10 @@ docx-pipeline validate <input.md> [--type engineering-note|enterprise-sop]
   Bearer token（`MD062`）、密碼與 API key 指派或指令中的明文帳密（`MD063`）。
   此檢查**不跳過 fenced code block**，因為憑證最常出現在指令與設定範例中；
   已改為 placeholder、遮罩或環境變數的值不會觸發。
+- 文件標示為對外（`distribution: customer` / `public` / `external`）時，另檢查識別類資訊：
+  組織自訂敏感詞（`MD064`）、email 位址（`MD065`）、內網 IP（`MD066`）。
+  這三項掃描涵蓋 frontmatter，因為 `project`、`title` 同樣會外洩客戶名稱。
+  `internal` 或未指定 `distribution` 時不啟用，內部文件保留主機名與 IP 屬正常。
 - Markdown pipe table 的表頭、分隔列與資料列欄數。
 - 相對圖片路徑是否存在；HTTP、HTTPS 與 data URL 不由本命令下載或檢查。
 - 一般文字中的未跳脫 placeholder 角括號。
@@ -477,8 +481,10 @@ Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式
 - release 目前以 macOS arm64 為主要打包目標。
 - 沒有完整的自動化測試與 DOCX 視覺回歸測試。
 - validator 只能檢查結構與檔案存在性，不能保證技術事實、指令結果或圖片語意正確。
-- 憑證偵測採高精確度樣式，刻意寧可漏報也不誤擋；客戶名稱、主機名這類語意判斷無法自動化，
-  仍須由撰寫者與複核者負責，不可將 `validate` 通過視為已完成去識別化。
+- 憑證偵測採高精確度樣式，刻意寧可漏報也不誤擋。
+- 客戶名稱只能靠組織自備的 `.docx-pipeline-denylist` 比對；未列入清單的名稱抓不到，
+  且清單需各組織自行維護，工具不散布任何實際條目。
+- 不可將 `validate` 通過視為已完成去識別化：語意層的判斷仍須由撰寫者與複核者負責。
 - Claude Code Skill 是否被載入與遵循，取決於 AI 工作流與使用者授權，不能視為強制閘門。
 - `doctor` 目前不以缺少依賴作為非零退出碼。
 - 編號建置使用固定名稱的同目錄暫存 Markdown，不適合相同來源的平行建置。
@@ -514,6 +520,7 @@ Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式
 | `templates/engineering-note-template.md` | 技術筆記、調查與決策紀錄模板 |
 | `templates/enterprise-sop-template.md` | SOP / 交付文件的 Markdown 起始模板 |
 | `templates/reference.docx` | Word 視覺樣式與企業模板 |
+| `templates/denylist.example` | 組織敏感詞清單範本；實際清單不進版控 |
 | `src/docx_pipeline/validator.py` | Markdown 結構與資產驗證 |
 | `.claude-plugin/plugin.json` | Claude Code Plugin metadata |
 | `.claude-plugin/marketplace.json` | Claude Code Marketplace catalog（公開 repo） |
