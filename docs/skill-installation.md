@@ -62,6 +62,25 @@ python3 -c "import json;print(json.load(open('$HOME/.claude/plugins/known_market
 /reload-plugins
 ```
 
+#### 更新以版本號為準，不是以 commit 為準
+
+`marketplace update` 只刷新 Marketplace 目錄。已安裝的 Plugin 是否重新取得內容，
+取決於 manifest 的 `version` 是否改變；commit 變了但版本沒變時，使用者端不會更新。
+
+因此**修改 `skills/docx-authoring/SKILL.md` 或 `templates/*.md` 時必須同步升版**，
+否則變更不會傳播到任何已安裝的環境。版本共有六處，必須一致（CI 會檢查）：
+
+```text
+.claude-plugin/plugin.json
+.claude-plugin/marketplace.json
+.codex-plugin/plugin.json
+pyproject.toml
+setup.py
+src/docx_pipeline/__init__.py
+```
+
+只改 `docs/` 或 CI 設定時不需要升版，因為 Skill 不讀取這些檔案。
+
 若要移除：
 
 ```text
