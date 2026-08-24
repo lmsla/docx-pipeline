@@ -4,7 +4,7 @@ project: docx-pipeline
 document_type: Acceptance Record
 author: Russell
 date: 2026-08-24
-status: partially-executed-2026-08-24
+status: partially-executed-2026-08-24-r2
 ---
 
 # 驗收範圍
@@ -61,7 +61,7 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 | B-01 | Skill 可被發現 | 重啟後開新 session | Skill 清單出現 `docx-pipeline:docx-authoring` | | |
 | B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | | |
 | B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | | |
-| B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | FAIL | 使用者僅描述技術討論，未要求整理，Skill 即自動觸發；已修正 description 為明確否定式  |
+| B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | PASS（重測後） | 2026-08-24 於全新 session 重測：貼入技術討論但未要求整理，Skill 未觸發，僅接續技術對話並主動詢問「需要的話我可以整理成筆記」；description 修正確認有效 |
 | B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | | |
 
 ## 文件類型判斷
@@ -138,11 +138,15 @@ docx-pipeline validate <產出的檔案>.md
 - **Antigravity 與 Codex 未實機驗證。** CI 只檢查 manifest 的 JSON 結構，
   未驗證實際載入。若推廣範圍包含這兩個平台，需另行驗收。
 - **work 模式未驗證。** B-03 為本次首度驗證項目。
-- **`description` 過度觸發，已於本次驗收中修正。** B-25 於 2026-08-24 實測 FAIL：
-  使用者僅在對話中描述技術調查，未表達「整理成筆記」之類的意圖，Skill 仍自動啟動。
-  原因是 description 雖寫 "Use when the user **asks** to record..."，
-  但 "asks" 這個限定詞在比對時被忽略，一段技術討論本身就足以觸發。
-  已改為明確否定式並加入中文觸發語，**尚待重新測試 B-25/B-26 確認修正有效**。
+- **`description` 過度觸發，已於本次驗收中發現並修正、重測確認有效。**
+  首次實測（v0.2.0/0.2.1）B-25 FAIL：使用者僅描述技術調查，未表達整理意圖，
+  Skill 仍自動啟動，原因是舊版 description 的 "asks" 限定詞在比對時被忽略。
+  改為明確否定式並加入中文觸發語後（v0.2.2），於全新 session 重測 B-25 PASS：
+  貼入同類技術討論，Skill 未觸發，僅接續對話並主動詢問是否需要整理成筆記。
+  **注意：驗證此修正時必須開全新 session，不能用「恢復分頁」**——resume 帶回的是
+  該 session 最初啟動時注入的舊系統上下文，即使已重啟整個 app，也不會反映新版
+  description，這點在本次驗收過程中造成一次誤判，記錄於此供日後測試參考。
+  B-26（明確呼叫）仍待測試。
 - **author 候選清單曾包含系統帳號。** B-08 通過（未自動代填），但互動介面提供的選項
   除使用者已告知的 `Russell` 外，還列出從系統帳號 `chen` 推導出的 `Chen`。
   條文明文禁止「從…系統帳號…推導」，這是條文與呈現方式之間的落差：
@@ -151,10 +155,11 @@ docx-pipeline validate <產出的檔案>.md
 
 # 交付判定
 
-2026-08-24 執行第一輪：情境一（單一使用者、單一 session）24 項中 15 項已驗證，
-14 項 PASS、1 項 FAIL（B-25，已修正並待重測）。個人試用通過標準（B-01、B-07、
-B-12、B-19）中三項已通過（B-07、B-12、B-19），B-01 尚待下次 session 開頭驗證。
+2026-08-24 執行第一輪：情境一 24 項中 15 項已驗證，14 項 PASS、1 項 FAIL（B-25）。
+同日修正 description 後於全新 session 重測 B-25，結果 PASS。目前 16 項已驗證，
+16 項 PASS、0 項 FAIL。個人試用通過標準（B-01、B-07、B-12、B-19）中三項已通過
+（B-07、B-12、B-19），B-01 尚待下次全新 session 開頭驗證。
 
-團隊推廣通過標準仍缺 B-01、B-03、B-04、B-06、B-10、B-17、B-18、B-26，
-以及修正後的 B-25 重測。尚不足以宣告團隊推廣就緒；可宣告個人日常試用可用，
-但 author 候選清單的系統帳號落差建議先觀察數次再定案。
+團隊推廣通過標準仍缺 B-01、B-03、B-04、B-06、B-10、B-17、B-18、B-26。
+尚不足以宣告團隊推廣就緒；**可宣告個人日常試用可用**，但 author 候選清單的
+系統帳號落差建議先觀察數次再定案，重啟後的測試一律使用全新 session。
