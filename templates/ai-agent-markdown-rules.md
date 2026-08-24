@@ -64,9 +64,23 @@ AI agent 必須先判斷文件類型，再選擇一份模板使用；不可同�
 title: 文件標題
 project: 專案名稱
 document_type: 文件類型
+author: 撰寫者姓名
 date: YYYY-MM-DD
 status: draft
 ```
+
+`author` 是文件的追溯依據，必須是撰寫者本人姓名（例如 `Russell`），且**不可由 AI 代為推測**。
+無法從對話或既有文件取得時，應直接詢問使用者後再填寫。
+
+`author` 與 `owner` 語意不同，不可互相代填：
+
+| 欄位 | 意義 | 範例 |
+|---|---|---|
+| `author` | 實際撰寫這份文件的人 | `Russell` |
+| `owner` | 後續負責維護的單位或人員 | `平台維運組` |
+
+validator 會擋下缺少 `author`（MD005），也會擋下仍是模板佔位值的欄位（MD009），
+例如 `撰寫者姓名`、`專案名稱`、`YYYY-MM-DD`、`TBD`。複製模板後必須逐欄填寫實際內容。
 
 ### Engineering Note 建議欄位
 
@@ -75,14 +89,14 @@ document_type: Engineering Note
 numbering: engineering
 ```
 
-Engineering Note 的 `owner`、`audience` 與 `numbering` 可依情境省略；若要轉成正式交付文件，請改用 Enterprise SOP 模板。
+Engineering Note 的 `owner`、`audience` 與 `numbering` 可依情境省略（但 `author` 一律必要）；若要轉成正式交付文件，請改用 Enterprise SOP 模板。
 
 ### Enterprise SOP 建議欄位
 
 ```yaml
 document_type: SOP
 version: 1.0
-owner: 撰寫人或負責單位
+owner: 負責單位或維護者
 audience: 客戶 / 主管 / 維運人員 / 開發人員
 numbering: deliverable-zh
 ```

@@ -117,6 +117,7 @@ docx-pipeline validate <input.md> [--type engineering-note|enterprise-sop]
 - H1 起始、標題層級不可跳級與文件類型的核心章節。
 - fenced code block 必須有語言標籤且必須閉合。
 - 整份文件不得保留聊天傳輸用的外層 `markdown` fenced code block；若誤存，回傳 `MD012`。
+- frontmatter 欄位若仍是模板佔位值（例如 `撰寫者姓名`、`專案名稱`、`YYYY-MM-DD`、`TBD`），回傳 `MD009`。
 - Markdown pipe table 的表頭、分隔列與資料列欄數。
 - 相對圖片路徑是否存在；HTTP、HTTPS 與 data URL 不由本命令下載或檢查。
 - 一般文字中的未跳脫 placeholder 角括號。
@@ -171,6 +172,7 @@ Pandoc 的尋找順序如下：
 | `subtitle` | 封面副標題 |
 | `guide` | 封面導引文字，優先於 `document_type` |
 | `document_type` | 封面導引文字的替代欄位 |
+| `author` | 撰寫者姓名；寫入封面「撰寫者」列與 DOCX core properties |
 | `file_name` | 封面「文件名稱」欄位，未提供時使用 `title` |
 | `version` | 封面版本欄位 |
 | `date` | 封面建立日期；未提供時使用執行當日日期 |
@@ -182,14 +184,17 @@ Pandoc 的尋找順序如下：
 
 `title` 未提供時，工具會使用第一個 H1；若仍找不到，使用輸入檔案的檔名 stem。`owner`、`status` 等欄位可保留在文件 metadata，但目前不會自動寫入封面或頁首。
 
+`author` 提供時，封面 metadata 表格會多一列「撰寫者」，並同步寫入 DOCX 的 core properties（`author` 與 `last_modified_by`），供 Word 檔案內容頁籤追溯。未提供時封面不產生該列。`validate` 將 `author` 列為共通必要欄位（缺少時回傳 `MD005`）。
+
 範例：
 
 ```yaml
 ---
 title: Elastic Agent 部署 SOP
-project: 北榮 POC
+project: 範例專案 POC
 document_type: 使用者操作手冊
 version: 1.0
+author: Russell
 date: 2026-08-23
 system: Elasticsearch / Kibana / Fleet
 audience: 維運人員

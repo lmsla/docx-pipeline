@@ -2,6 +2,7 @@
 title: Validator Engineering Note
 project: docx-pipeline
 document_type: Engineering Note
+author: Russell
 date: 2026-08-23
 status: draft
 numbering: engineering

@@ -348,6 +348,7 @@ def add_cover_page(doc: Document, metadata: dict[str, str]) -> None:
     created = metadata.get("date") or dt.date.today().isoformat()
     system = metadata.get("system") or metadata.get("applicable_system") or ""
     audience = metadata.get("audience") or metadata.get("applicable_audience") or ""
+    author = metadata.get("author", "")
 
     body = doc._body._body
     original_children = list(body)
@@ -391,12 +392,17 @@ def add_cover_page(doc: Document, metadata: dict[str, str]) -> None:
         r.font.size = Pt(16)
         r.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
-    table = doc.add_table(rows=5, cols=2)
+    labels = ["文件名稱", "版本", "建立日期", "適用系統", "適用對象"]
+    values = [file_name, version, created, system, audience]
+    # author 為選填：缺值時不留空列，避免封面出現空白欄位
+    if author:
+        labels.append("撰寫者")
+        values.append(author)
+
+    table = doc.add_table(rows=len(labels), cols=2)
     created_elements.append(table._tbl)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
-    labels = ["文件名稱", "版本", "建立日期", "適用系統", "適用對象"]
-    values = [file_name, version, created, system, audience]
     for row, label, value in zip(table.rows, labels, values):
         set_table_cell_text(row.cells[0], label, bold=True, fill="D9E2F3")
         set_table_cell_text(row.cells[1], value)
@@ -543,6 +549,11 @@ def postprocess_docx(
         sanitized_input = Path(tmpdir) / "sanitized.docx"
         strip_embedded_fonts(input_docx, sanitized_input)
         doc = Document(sanitized_input)
+        author = metadata.get("author", "").strip()
+        if author:
+            # 同步寫入 OOXML core properties，Word 檔案內容頁籤也能追到撰寫者
+            doc.core_properties.author = author
+            doc.core_properties.last_modified_by = author
         set_paragraph_style_tokens(doc)
         normalize_sections(doc, header_text)
         if add_cover:

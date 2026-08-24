@@ -26,6 +26,23 @@ PLACEHOLDER_RE = re.compile(r"(?<!\\)<([A-Za-z][A-Za-z0-9_.:-]{2,})>")
 MANUAL_NUMBER_RE = re.compile(r"^(?:\d+(?:\.\d+)*、\s*|\d+(?:\.\d+)*\.\s+|\d+(?:\.\d+)+\s+)")
 COMMON_HTML_TAGS = {"a", "br", "code", "div", "em", "img", "li", "ol", "p", "pre", "span", "strong", "ul"}
 
+# 模板原樣未填的佔位值。留著這些值等於沒有填寫，對追溯與交付都無效。
+TEMPLATE_PLACEHOLDERS = {
+    "撰寫者姓名",
+    "撰寫人或負責單位",
+    "負責單位或維護者",
+    "文件標題",
+    "技術筆記標題",
+    "專案名稱",
+    "yyyy-mm-dd",
+    "tbd",
+    "todo",
+    "unknown",
+    "n/a",
+    "na",
+    "-",
+}
+
 
 @dataclass(frozen=True)
 class ValidationIssue:
@@ -306,10 +323,20 @@ def validate_markdown(markdown: Path, document_type: str | None = None) -> list[
 
     lines = text.splitlines()
     metadata, body_start, issues = _parse_frontmatter(lines)
-    required_fields = ("title", "project", "document_type", "date", "status")
+    required_fields = ("title", "project", "document_type", "author", "date", "status")
     for field in required_fields:
         if not metadata.get(field):
             issues.append(_issue("MD005", 1, f"frontmatter 缺少必要欄位：{field}"))
+
+    for field, value in metadata.items():
+        if value.strip().lower() in TEMPLATE_PLACEHOLDERS:
+            issues.append(
+                _issue(
+                    "MD009",
+                    1,
+                    f"frontmatter 欄位 {field} 仍是模板佔位值「{value.strip()}」，請填入實際內容",
+                )
+            )
 
     selected_type = document_type or _document_type(metadata.get("document_type"))
     if selected_type is None:

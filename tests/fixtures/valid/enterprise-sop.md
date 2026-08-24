@@ -2,6 +2,7 @@
 title: Validator Enterprise SOP
 project: docx-pipeline
 document_type: SOP
+author: Russell
 version: 1.0
 date: 2026-08-23
 owner: 維護者

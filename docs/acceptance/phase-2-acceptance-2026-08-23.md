@@ -11,7 +11,7 @@ status: accepted-with-known-gaps
 本次驗收涵蓋：
 
 - Markdown validator 的正向與反向案例。
-- 兩份實際北榮 Markdown 文件的規則檢查。
+- 兩份實際客戶專案 Markdown 文件的規則檢查。
 - Claude Code Plugin manifest 與 Skill 檔案結構。
 - macOS arm64 release binary 重建與基本執行。
 - release binary 的 DOCX 轉換與 PNG 視覺檢查。

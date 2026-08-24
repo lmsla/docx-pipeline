@@ -16,6 +16,7 @@ class ValidatorTest(unittest.TestCase):
 title: 測試筆記
 project: 測試專案
 document_type: Engineering Note
+author: Russell
 date: 2026-08-23
 status: draft
 ---
@@ -98,6 +99,60 @@ echo ok
             )
             codes = {issue.code for issue in validate_markdown(markdown)}
             self.assertIn("MD012", codes)
+
+
+    def test_missing_author_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory) / "note.md"
+            markdown.write_text(
+                """---
+title: 測試筆記
+project: 測試專案
+document_type: Engineering Note
+date: 2026-08-23
+status: draft
+---
+
+# 摘要
+
+內容。
+
+# 背景與問題
+
+問題描述。
+""",
+                encoding="utf-8",
+            )
+            codes = {issue.code for issue in validate_markdown(markdown)}
+            self.assertIn("MD005", codes)
+
+    def test_template_placeholder_values_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory) / "note.md"
+            markdown.write_text(
+                """---
+title: 測試筆記
+project: 測試專案
+document_type: Engineering Note
+author: 撰寫者姓名
+date: 2026-08-23
+status: draft
+---
+
+# 摘要
+
+內容。
+
+# 背景與問題
+
+問題描述。
+""",
+                encoding="utf-8",
+            )
+            issues = validate_markdown(markdown)
+            placeholder = [i for i in issues if i.code == "MD009"]
+            self.assertTrue(placeholder)
+            self.assertIn("author", placeholder[0].message)
 
 
 if __name__ == "__main__":

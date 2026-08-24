@@ -2,9 +2,10 @@
 title: 文件標題
 project: 專案名稱
 document_type: SOP
+author: 撰寫者姓名
 version: 1.0
 date: YYYY-MM-DD
-owner: 撰寫人或負責單位
+owner: 負責單位或維護者
 audience: 客戶 / 主管 / 維運人員 / 開發人員
 status: draft
 numbering: deliverable-zh

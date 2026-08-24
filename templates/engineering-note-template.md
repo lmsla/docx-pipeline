@@ -2,8 +2,9 @@
 title: 技術筆記標題
 project: 專案名稱
 document_type: Engineering Note
+author: 撰寫者姓名
 date: YYYY-MM-DD
-owner: 撰寫人或負責單位
+owner: 負責單位或維護者
 audience: 開發人員 / 維運人員 / 專案成員
 status: draft
 numbering: engineering
