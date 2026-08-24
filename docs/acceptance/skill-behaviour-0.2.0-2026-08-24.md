@@ -51,6 +51,9 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 
 每項的「結果」欄在執行後填入 PASS / FAIL / BLOCKED，並在「實際觀察」記錄實際行為。
 
+可直接複製貼上的測試素材見 `skill-behaviour-test-scripts.md`；
+其中的四個情境已涵蓋本節多數項目。
+
 ## 載入與發現
 
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
