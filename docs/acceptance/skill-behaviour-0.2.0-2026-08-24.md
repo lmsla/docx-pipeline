@@ -60,7 +60,7 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 |---|---|---|---|---|---|
 | B-01 | Skill 可被發現 | 重啟後開新 session | Skill 清單出現 `docx-pipeline:docx-authoring` | PASS | 與 B-25 重測共用同一次全新 session 觀察：AI 能正確讀取並引用 skill 內容，證明已被發現 |
 | B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | PASS | 實際驗證方式更嚴格：AI 逐字引用 description 全文（含 ONLY / Do NOT 兩層限制），與 0.2.2 原檔逐字比對相符，非僅步驟計數 |
-| B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | | |
+| B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | N/A | 2026-08-24 實測：work/cowork 模式讀取帳號層級 Skills（`/root/.claude/skills/synced/`），不是 Claude Code plugin marketplace（`~/.claude/plugins/`）。兩套機制互不相通，找不到 `docx-authoring` 是預期結果，非缺陷。需另外以 zip 上傳帳號層級 Skills 才能涵蓋此發佈通路，見已知風險 |
 | B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | PASS（重測後） | 2026-08-24 於全新 session 重測：貼入技術討論但未要求整理，Skill 未觸發，僅接續技術對話並主動詢問「需要的話我可以整理成筆記」；description 修正確認有效 |
 | B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | | |
 
@@ -137,6 +137,12 @@ docx-pipeline validate <產出的檔案>.md
   徹底清除需重建 repository。
 - **Antigravity 與 Codex 未實機驗證。** CI 只檢查 manifest 的 JSON 結構，
   未驗證實際載入。若推廣範圍包含這兩個平台，需另行驗收。
+- **work/cowork 模式與 Claude Code plugin marketplace 是兩套互不相通的機制。**
+  B-03 實測確認 work 模式讀取帳號層級 Skills（`/root/.claude/skills/synced/`），
+  與桌面版/CLI 讀取的 `~/.claude/plugins/` 完全無關。目前只完成 Claude Code plugin
+  封裝，work 模式與 claude.ai 一般聊天都涵蓋不到，需另外把 `skills/docx-authoring/`
+  連同 `templates/` 打包成 zip，在 Settings > Features 以帳號層級 Skill 上傳，
+  且兩種封裝更新方式不同、無法共用同一次發佈流程。
 - **work 模式未驗證。** B-03 為本次首度驗證項目。
 - **`description` 過度觸發，已於本次驗收中發現並修正、重測確認有效。**
   首次實測（v0.2.0/0.2.1）B-25 FAIL：使用者僅描述技術調查，未表達整理意圖，
@@ -157,11 +163,15 @@ docx-pipeline validate <產出的檔案>.md
 
 2026-08-24 執行第一輪：情境一 24 項中 15 項已驗證，14 項 PASS、1 項 FAIL（B-25）。
 同日修正 description 後於全新 session 重測，B-25 轉為 PASS；同一次觀察一併回填
-B-01、B-02（skill 被發現、版本正確，且以逐字比對 description 全文驗證，
-比原定的步驟計數更嚴格）。目前 18 項已驗證，**18 項 PASS、0 項 FAIL**。
-個人試用通過標準（B-01、B-07、B-12、B-19）**四項全數通過**。
+B-01、B-02。B-03 實測結果為 N/A：work/cowork 模式使用帳號層級 Skills 機制，
+與 Claude Code plugin marketplace 互不相通，此項無法透過現有封裝方式通過，
+需另行以 zip 上傳帳號層級 Skill 才能涵蓋。
 
-團隊推廣通過標準仍缺 B-03、B-04、B-06、B-10、B-17、B-18、B-26。
-**個人日常試用已可正式使用**；團隊推廣待補上述項目，尤其 B-03（work 模式）
-未曾驗證過。author 候選清單的系統帳號落差建議先觀察數次再定案。
-重啟後的測試一律使用全新 session，不可恢復分頁（見上方已知風險）。
+目前 19 項已驗證，**18 項 PASS、0 項 FAIL、1 項 N/A**。個人試用通過標準
+（B-01、B-07、B-12、B-19）**四項全數通過**。
+
+團隊推廣通過標準仍缺 B-04、B-06、B-10、B-17、B-18、B-26，另有 B-03 待改用
+zip 封裝後才能重新驗證。**個人日常試用已可正式使用**；團隊推廣若涵蓋 work 模式
+或 claude.ai 一般聊天，須先完成 zip 封裝與帳號層級 Skill 上傳，這是本次驗收
+發現的新增前置工作，不在原本的驗收範圍內。author 候選清單的系統帳號落差建議
+先觀察數次再定案。重啟後的測試一律使用全新 session，不可恢復分頁。
