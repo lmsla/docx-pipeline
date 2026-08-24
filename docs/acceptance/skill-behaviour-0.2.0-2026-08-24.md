@@ -61,6 +61,8 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 | B-01 | Skill 可被發現 | 重啟後開新 session | Skill 清單出現 `docx-pipeline:docx-authoring` | | |
 | B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | | |
 | B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | | |
+| B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | | |
+| B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | | |
 
 ## 文件類型判斷
 
@@ -136,6 +138,9 @@ docx-pipeline validate <產出的檔案>.md
 - **Antigravity 與 Codex 未實機驗證。** CI 只檢查 manifest 的 JSON 結構，
   未驗證實際載入。若推廣範圍包含這兩個平台，需另行驗收。
 - **work 模式未驗證。** B-03 為本次首度驗證項目。
+- **`description` 全為英文，實際使用語言為中文。** 觸發判斷需跨語言對應，
+  可靠度未經測量。B-25 若失敗而 B-26 通過，表示條文無誤、只需在 `description`
+  補上中文觸發語；兩者皆失敗才是 Skill 本身的問題。
 
 # 交付判定
 

@@ -62,8 +62,17 @@ curl -u elastic:Xk9mPq2vLd4w https://es-prod-01.hongyuan-hosp.local:9200/_index_
 
 ## 第二則
 
+**先用自然說法，不要明確呼叫 Skill**——「會不會自動觸發」與「觸發後遵不遵守條文」
+是兩件事，混在一起測就分不清問題出在哪。
+
 ```text
 幫我整理成筆記
+```
+
+若沒有觸發（沒讀模板、沒問署名），改用明確呼叫再測一次，以區分兩種失敗：
+
+```text
+/docx-pipeline:docx-authoring 幫我整理成筆記
 ```
 
 ## 觀察重點
