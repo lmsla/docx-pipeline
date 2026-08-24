@@ -25,14 +25,14 @@ Markdown -> pandoc 套 reference.docx -> python-docx 後處理 -> output.docx
 .claude-plugin/plugin.json       # Claude Code
 plugin.json                      # Antigravity
 .codex-plugin/plugin.json        # Codex
-.claude-plugin/marketplace.json  # Claude Code private Marketplace
+.claude-plugin/marketplace.json  # Claude Code Marketplace（公開 repo）
 ```
 
 三個平台共用 `skills/docx-authoring/SKILL.md`、`templates/` 與相同的 Markdown 規則。Skill 只負責整理與產出 Markdown，不會自行執行 `docx-pipeline`、Pandoc 或 DOCX 轉換。詳細安裝與人工驗收請參考 [Skill 安裝與驗收](docs/skill-installation.md)。
 
 ### Claude Code 持久安裝
 
-`claude --plugin-dir .` 只適合維護者做單次本地測試，不是日常安裝方式。正式使用時，在 Claude Code 中一次設定 private Marketplace 與 `User scope` Plugin：
+`claude --plugin-dir .` 只適合維護者做單次本地測試，不是日常安裝方式。正式使用時，在 Claude Code 中一次設定公開 Marketplace 與 `User scope` Plugin：
 
 ```text
 /plugin marketplace add lmsla/docx-pipeline
@@ -43,8 +43,11 @@ plugin.json                      # Antigravity
 
 ```text
 /plugin marketplace update docx-pipeline-marketplace
-/reload-plugins
+/plugin update docx-pipeline@docx-pipeline-marketplace
 ```
+
+`marketplace update` 只刷新 Marketplace 目錄，**不會**升級已安裝的 Plugin；
+必須接著執行 `plugin update` 才會真正取得新版本，之後重啟 Claude Code 套用。
 
 本 repo 為公開 repository，因此任何機器都能直接安裝，不需要 GitHub 憑證、SSH key 或 `ssh-agent`。
 安裝時請選擇 `User scope`，即可跨專案、跨重啟、跨 chat 與 work 模式持續使用。

@@ -97,7 +97,7 @@ src/docx_pipeline/__init__.py
 /plugin marketplace remove docx-pipeline-marketplace
 ```
 
-這是 private GitHub repository；每台電腦仍須具備該 repo 的 GitHub 權限。SSH 安裝需要 SSH key 已載入 `ssh-agent`，HTTPS 安裝則需要已設定 Git credential helper。
+`lmsla/docx-pipeline` 是公開 repository，任何機器都可直接安裝，不需要 GitHub 憑證、SSH key 或 credential helper。
 
 #### 專案共用安裝
 
@@ -152,8 +152,8 @@ Skill 不可以在本工作流中：
 
 Claude Code 另須驗收：
 
-7. 可從 private Marketplace 安裝 Plugin。
+7. 可從公開 Marketplace 安裝 Plugin，不需要任何 GitHub 憑證。
 8. 安裝選擇 `User scope` 後，重新啟動 Claude Code 仍能直接使用 Skill。
-9. Marketplace 更新後，Plugin 版本與模板資源同步更新。
+9. 執行 `plugin marketplace update` **並接著執行 `plugin update`** 後，Plugin 版本與模板資源同步更新——前者只刷新目錄，不會單獨升級已安裝的 Plugin。
 
 `docx-pipeline validate` 與 DOCX 轉換應由使用者或 CI 另行執行，並以其結果作為下游品質閘門。
