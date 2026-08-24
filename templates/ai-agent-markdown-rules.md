@@ -125,9 +125,13 @@ export API_KEY="${ELASTIC_API_KEY}"
 `docx-pipeline validate` 會擋下寫死的憑證（`MD060`–`MD063`）。
 
 識別類則需要組織自備敏感詞清單才擋得住——「這是不是客戶名」沒有通用樣式可判斷。
-把客戶簡稱、全名、內部網域與專案代號寫進 `.docx-pipeline-denylist`（放在文件目錄或
-任一上層目錄，可參考 `templates/denylist.example`），validate 就會在文件標示為對外時
-擋下 `MD064`；email 與內網 IP 另有通用偵測（`MD065`、`MD066`），不需要設定。
+把客戶簡稱、全名、內部網域與專案代號寫進敏感詞清單（可參考 `templates/denylist.example`），
+validate 就會在文件標示為對外時擋下 `MD064`；email 與內網 IP 另有通用偵測
+（`MD065`、`MD066`），不需要設定。
+
+清單位置依序為 `--denylist`、`DOCX_PIPELINE_DENYLIST`、`~/.config/docx-pipeline/denylist`、
+以及自文件目錄向上的 `.docx-pipeline-denylist`；**所有找到的檔案會合併生效**，
+因此組織共用清單與專案專屬補充可以並存。以 `docx-pipeline doctor` 確認實際來源。
 
 清單內容等同一份客戶名單，**絕不可進入版控**；`.docx-pipeline-denylist` 已列入
 `.gitignore`，CI 也會擋下誤 commit。

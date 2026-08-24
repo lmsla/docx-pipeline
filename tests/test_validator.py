@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from docx_pipeline.validator import validate_markdown
+from docx_pipeline.validator import load_denylist, validate_markdown
 
 
 class ValidatorTest(unittest.TestCase):
@@ -260,6 +260,38 @@ distribution: {distribution}
             hits = [i for i in validate_markdown(markdown) if i.code == "MD064"]
             # project: 範例客戶 POC 位於 frontmatter，必須被涵蓋
             self.assertTrue(any(i.line <= 8 for i in hits))
+
+    def test_denylist_sources_are_merged_not_shadowed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shared = root / "shared-denylist"
+            shared.write_text("# 共用\n共用客戶\n", encoding="utf-8")
+
+            project = root / "project"
+            project.mkdir()
+            (project / ".docx-pipeline-denylist").write_text(
+                "# 專案\n專案代號\n", encoding="utf-8"
+            )
+            markdown = project / "note.md"
+            markdown.write_text("placeholder", encoding="utf-8")
+
+            terms = load_denylist(markdown, shared)
+            # 專案層不應覆蓋共用層，兩者都要生效
+            self.assertIn("共用客戶", terms)
+            self.assertIn("專案代號", terms)
+
+    def test_denylist_entries_are_deduplicated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shared = root / "shared-denylist"
+            shared.write_text("重複詞\n", encoding="utf-8")
+            project = root / "project"
+            project.mkdir()
+            (project / ".docx-pipeline-denylist").write_text("重複詞\n", encoding="utf-8")
+            markdown = project / "note.md"
+            markdown.write_text("placeholder", encoding="utf-8")
+
+            self.assertEqual(load_denylist(markdown, shared).count("重複詞"), 1)
 
 
 

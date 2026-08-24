@@ -482,8 +482,12 @@ Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式
 - 沒有完整的自動化測試與 DOCX 視覺回歸測試。
 - validator 只能檢查結構與檔案存在性，不能保證技術事實、指令結果或圖片語意正確。
 - 憑證偵測採高精確度樣式，刻意寧可漏報也不誤擋。
-- 客戶名稱只能靠組織自備的 `.docx-pipeline-denylist` 比對；未列入清單的名稱抓不到，
+- 客戶名稱只能靠組織自備的敏感詞清單比對；未列入清單的名稱抓不到，
   且清單需各組織自行維護，工具不散布任何實際條目。
+- 清單來源依序為 `--denylist`、`DOCX_PIPELINE_DENYLIST`（可用 `os.pathsep` 分隔多個路徑）、
+  `~/.config/docx-pipeline/denylist`（受 `XDG_CONFIG_HOME` 影響）、以及自文件目錄向上的
+  `.docx-pipeline-denylist`。所有存在的檔案會合併並去重，不是取第一個命中。
+  工具不會自行下載遠端清單；跨機器同步屬於部署方的責任。
 - 不可將 `validate` 通過視為已完成去識別化：語意層的判斷仍須由撰寫者與複核者負責。
 - Claude Code Skill 是否被載入與遵循，取決於 AI 工作流與使用者授權，不能視為強制閘門。
 - `doctor` 目前不以缺少依賴作為非零退出碼。

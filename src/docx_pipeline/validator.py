@@ -89,38 +89,74 @@ def _is_external(metadata: dict[str, str]) -> bool:
     return metadata.get("distribution", "").strip().lower() in EXTERNAL_DISTRIBUTIONS
 
 
-def load_denylist(markdown: Path, explicit: Path | None = None) -> list[str]:
-    """載入組織自訂的敏感詞清單。
+def user_denylist_path() -> Path:
+    """使用者層清單位置，與專案結構無關，跨機器一致。"""
+    base = os.environ.get("XDG_CONFIG_HOME")
+    root = Path(base).expanduser() if base else Path.home() / ".config"
+    return root / "docx-pipeline" / "denylist"
 
-    清單本身就是敏感資料（等同一份客戶名單），因此不隨 repo 散布，
-    而是由各組織放在本機。尋找順序：`--denylist` > 環境變數 >
-    自 Markdown 所在目錄逐層向上尋找 `.docx-pipeline-denylist`。
+
+def denylist_sources(markdown: Path, explicit: Path | None = None) -> list[Path]:
+    """回傳所有實際存在的清單檔，依優先順序排列。
+
+    刻意**合併**而非取第一個命中：組織共用清單放在使用者層，專案專屬的補充放在
+    專案目錄，兩者應同時生效，而不是互相覆蓋。
     """
     candidates: list[Path] = []
     if explicit is not None:
-        candidates.append(explicit)
+        candidates.append(explicit.expanduser())
     env_value = os.environ.get("DOCX_PIPELINE_DENYLIST")
     if env_value:
-        candidates.append(Path(env_value).expanduser())
+        # 允許以 os.pathsep 分隔多個路徑，供同時掛載多份共用清單
+        candidates.extend(Path(part).expanduser() for part in env_value.split(os.pathsep) if part)
+    candidates.append(user_denylist_path())
 
     directory = markdown.parent.resolve()
-    for parent in [directory, *directory.parents]:
-        candidates.append(parent / DENYLIST_FILENAME)
+    candidates.extend(parent / DENYLIST_FILENAME for parent in [directory, *directory.parents])
 
+    found: list[Path] = []
+    seen: set[Path] = set()
     for candidate in candidates:
         try:
-            if not candidate.is_file():
+            resolved = candidate.resolve()
+            if resolved in seen or not candidate.is_file():
                 continue
-            terms = []
-            for line in candidate.read_text(encoding="utf-8").splitlines():
-                term = line.split("#", 1)[0].strip()
-                # 單字元詞誤報率太高，直接忽略
-                if len(term) >= 2:
-                    terms.append(term)
-            return terms
+            seen.add(resolved)
+            found.append(candidate)
         except OSError:
             continue
-    return []
+    return found
+
+
+def _read_denylist_file(path: Path) -> list[str]:
+    terms: list[str] = []
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return terms
+    for line in text.splitlines():
+        term = line.split("#", 1)[0].strip()
+        # 單字元詞誤報率太高，直接忽略
+        if len(term) >= 2:
+            terms.append(term)
+    return terms
+
+
+def load_denylist(markdown: Path, explicit: Path | None = None) -> list[str]:
+    """載入並合併組織自訂的敏感詞清單。
+
+    清單本身就是敏感資料（等同一份客戶名單），因此不隨 repo 散布，
+    而是由各組織放在本機或共用位置。
+    """
+    terms: list[str] = []
+    seen: set[str] = set()
+    for source in denylist_sources(markdown, explicit):
+        for term in _read_denylist_file(source):
+            lowered = term.lower()
+            if lowered not in seen:
+                seen.add(lowered)
+                terms.append(term)
+    return terms
 
 
 @dataclass(frozen=True)

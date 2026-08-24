@@ -167,6 +167,19 @@ def doctor(_: argparse.Namespace) -> int:
             "(自備企業模板，另存為 templates/reference.docx 或用 --reference-doc 指定)"
         )
 
+    from .validator import denylist_sources, load_denylist, user_denylist_path
+
+    probe = Path.cwd() / "_"
+    sources = denylist_sources(probe)
+    if sources:
+        terms = load_denylist(probe)
+        print(f"denylist: {len(terms)} 個詞，來自 {len(sources)} 個檔案")
+        for source in sources:
+            print(f"  - {source}")
+    else:
+        print("denylist: 未設定（僅影響對外文件的客戶名稱檢查）")
+        print(f"  使用者層預期位置：{user_denylist_path()}")
+
     return 0
 
 
