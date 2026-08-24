@@ -134,7 +134,7 @@ def build(args: argparse.Namespace) -> int:
         clear_dirty_fields=not native_toc,
         normalize_tables=not args.no_table_cleanup,
         normalize_images=not args.no_image_cleanup,
-        chapter_page_breaks=not args.no_chapter_breaks,
+        chapter_page_breaks=args.chapter_breaks,
     )
 
     if not args.keep_intermediate:
@@ -219,8 +219,19 @@ def make_parser() -> argparse.ArgumentParser:
     build_parser.add_argument("--keep-intermediate", action="store_true", help="Keep the Pandoc DOCX before cleanup")
     build_parser.add_argument("--no-table-cleanup", action="store_true", help="Skip table normalization")
     build_parser.add_argument("--no-image-cleanup", action="store_true", help="Skip image normalization")
-    build_parser.add_argument("--no-chapter-breaks", action="store_true", help="Skip page breaks before Heading 1")
-    build_parser.set_defaults(func=build)
+    chapter_breaks = build_parser.add_mutually_exclusive_group()
+    chapter_breaks.add_argument(
+        "--chapter-breaks",
+        action="store_true",
+        help="Start each Heading 1 chapter on a new page",
+    )
+    chapter_breaks.add_argument(
+        "--no-chapter-breaks",
+        dest="chapter_breaks",
+        action="store_false",
+        help=argparse.SUPPRESS,
+    )
+    build_parser.set_defaults(func=build, chapter_breaks=False)
 
     doctor_parser = subparsers.add_parser("doctor", help="Check local dependencies")
     doctor_parser.set_defaults(func=doctor)

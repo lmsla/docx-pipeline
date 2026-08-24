@@ -12,7 +12,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Inches, Pt, RGBColor
+from docx.shared import Cm, Inches, Pt, RGBColor, Twips
 
 
 A4_WIDTH = Cm(21.0)
@@ -21,6 +21,8 @@ MARGIN = Inches(1.0)
 CONTENT_WIDTH = Inches(6.27)
 CODE_FILL = "F2F2F2"
 CODE_BORDER = "D9D9D9"
+EMU_PER_DXA = 635
+REVISION_TABLE_HEADERS = ["修訂日期", "版號", "修訂內容", "修訂者"]
 NS = {
     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
     "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
@@ -176,10 +178,76 @@ def set_table_cell_text(cell, text: str, *, bold: bool = False, fill: str | None
 
 
 def is_cover_metadata_table(table) -> bool:
-    if len(table.rows) != 5 or len(table.columns) != 2:
+    if len(table.rows) not in {5, 6} or len(table.columns) != 2:
         return False
     labels = [row.cells[0].text.strip() for row in table.rows]
-    return labels == ["文件名稱", "版本", "建立日期", "適用系統", "適用對象"]
+    expected = ["文件名稱", "版本", "建立日期", "適用系統", "適用對象"]
+    return labels[:5] == expected and (len(labels) == 5 or labels[5] == "撰寫者")
+
+
+def table_geometry_is_usable(table) -> bool:
+    column_count = max((len(row.cells) for row in table.rows), default=0)
+    grid_widths = [int(column.get(qn("w:w"), "0")) for column in table._tbl.tblGrid]
+    tbl_w = table._tbl.tblPr.find(qn("w:tblW"))
+    table_width = int(tbl_w.get(qn("w:w"), "0")) if tbl_w is not None else 0
+    return (
+        column_count > 0
+        and len(grid_widths) == column_count
+        and all(width > 0 for width in grid_widths)
+        and table_width > 0
+    )
+
+
+def set_table_geometry(table, total_width: int) -> None:
+    column_count = max((len(row.cells) for row in table.rows), default=0)
+    if column_count == 0:
+        return
+
+    headers = [cell.text.strip() for cell in table.rows[0].cells] if table.rows else []
+    weights = [18, 10, 52, 20] if headers == REVISION_TABLE_HEADERS else [1] * column_count
+    weight_total = sum(weights)
+    widths = [total_width * weight // weight_total for weight in weights]
+    widths[-1] += total_width - sum(widths)
+
+    tbl_pr = table._tbl.tblPr
+    tbl_w = get_or_insert_ordered(
+        tbl_pr,
+        "w:tblW",
+        (
+            "w:jc", "w:tblCellSpacing", "w:tblInd", "w:tblBorders", "w:shd",
+            "w:tblLayout", "w:tblCellMar", "w:tblLook",
+        ),
+    )
+    tbl_w.set(qn("w:type"), "dxa")
+    tbl_w.set(qn("w:w"), str(total_width))
+
+    table.alignment = WD_TABLE_ALIGNMENT.LEFT
+    table_indent = get_or_insert_ordered(
+        tbl_pr,
+        "w:tblInd",
+        ("w:tblBorders", "w:shd", "w:tblLayout", "w:tblCellMar", "w:tblLook"),
+    )
+    table_indent.set(qn("w:type"), "dxa")
+    table_indent.set(qn("w:w"), "0")
+
+    tbl_grid = table._tbl.tblGrid
+    for grid_col in list(tbl_grid):
+        tbl_grid.remove(grid_col)
+    for width in widths:
+        grid_col = OxmlElement("w:gridCol")
+        grid_col.set(qn("w:w"), str(width))
+        tbl_grid.append(grid_col)
+
+    for index, width in enumerate(widths):
+        table.columns[index].width = Twips(width)
+
+    for row in table.rows:
+        row.height = None
+        for index, cell in enumerate(row.cells):
+            cell.width = Twips(widths[index])
+            tc_w = cell._tc.get_or_add_tcPr().get_or_add_tcW()
+            tc_w.set(qn("w:type"), "dxa")
+            tc_w.set(qn("w:w"), str(widths[index]))
 
 
 def set_paragraph_style_tokens(doc: Document) -> None:
@@ -288,11 +356,19 @@ def add_page_field(paragraph) -> None:
 
 
 def normalize_tables(doc: Document) -> None:
+    section = doc.sections[0]
+    available_width = section.page_width - section.left_margin - section.right_margin
+    fallback_width = int(round(CONTENT_WIDTH / EMU_PER_DXA))
+    total_width = int(round(available_width / EMU_PER_DXA)) if available_width > 0 else fallback_width
+
     for table in doc.tables:
         enhance_table = not is_cover_metadata_table(table)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         table.autofit = False
         if enhance_table:
+            headers = [cell.text.strip() for cell in table.rows[0].cells] if table.rows else []
+            if headers == REVISION_TABLE_HEADERS or not table_geometry_is_usable(table):
+                set_table_geometry(table, total_width)
             set_table_borders(table)
         for row_idx, row in enumerate(table.rows):
             for cell in row.cells:

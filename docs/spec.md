@@ -84,7 +84,8 @@ docx-pipeline build <input.md> -o <output.docx> [options]
 | `--keep-intermediate` | 清理暫存檔 | 保留 Pandoc 中間 DOCX 與編號暫存 Markdown |
 | `--no-table-cleanup` | 整理表格 | 跳過表格樣式整理 |
 | `--no-image-cleanup` | 整理圖片 | 跳過圖片尺寸與段落整理 |
-| `--no-chapter-breaks` | H1 換頁 | 跳過 H1 章節前的分頁設定 |
+| `--chapter-breaks` | H1 換頁 | 選用；讓每個 H1 章節另起新頁，預設不強制分頁 |
+| `--no-chapter-breaks` | 相容參數 | 保留舊版呼叫相容性；目前預設行為已是不強制分頁 |
 
 `--numbering` CLI 參數優先於 frontmatter 的 `numbering`。`--no-toc` 與 `--static-toc` 同時使用時，目前實作以 `--no-toc` 為準，不產生目錄。
 
