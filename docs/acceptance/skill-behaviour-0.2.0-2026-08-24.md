@@ -58,8 +58,8 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
 |---|---|---|---|---|---|
-| B-01 | Skill 可被發現 | 重啟後開新 session | Skill 清單出現 `docx-pipeline:docx-authoring` | | |
-| B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | | |
+| B-01 | Skill 可被發現 | 重啟後開新 session | Skill 清單出現 `docx-pipeline:docx-authoring` | PASS | 與 B-25 重測共用同一次全新 session 觀察：AI 能正確讀取並引用 skill 內容，證明已被發現 |
+| B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | PASS | 實際驗證方式更嚴格：AI 逐字引用 description 全文（含 ONLY / Do NOT 兩層限制），與 0.2.2 原檔逐字比對相符，非僅步驟計數 |
 | B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | | |
 | B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | PASS（重測後） | 2026-08-24 於全新 session 重測：貼入技術討論但未要求整理，Skill 未觸發，僅接續技術對話並主動詢問「需要的話我可以整理成筆記」；description 修正確認有效 |
 | B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | | |
@@ -156,10 +156,12 @@ docx-pipeline validate <產出的檔案>.md
 # 交付判定
 
 2026-08-24 執行第一輪：情境一 24 項中 15 項已驗證，14 項 PASS、1 項 FAIL（B-25）。
-同日修正 description 後於全新 session 重測 B-25，結果 PASS。目前 16 項已驗證，
-16 項 PASS、0 項 FAIL。個人試用通過標準（B-01、B-07、B-12、B-19）中三項已通過
-（B-07、B-12、B-19），B-01 尚待下次全新 session 開頭驗證。
+同日修正 description 後於全新 session 重測，B-25 轉為 PASS；同一次觀察一併回填
+B-01、B-02（skill 被發現、版本正確，且以逐字比對 description 全文驗證，
+比原定的步驟計數更嚴格）。目前 18 項已驗證，**18 項 PASS、0 項 FAIL**。
+個人試用通過標準（B-01、B-07、B-12、B-19）**四項全數通過**。
 
-團隊推廣通過標準仍缺 B-01、B-03、B-04、B-06、B-10、B-17、B-18、B-26。
-尚不足以宣告團隊推廣就緒；**可宣告個人日常試用可用**，但 author 候選清單的
-系統帳號落差建議先觀察數次再定案，重啟後的測試一律使用全新 session。
+團隊推廣通過標準仍缺 B-03、B-04、B-06、B-10、B-17、B-18、B-26。
+**個人日常試用已可正式使用**；團隊推廣待補上述項目，尤其 B-03（work 模式）
+未曾驗證過。author 候選清單的系統帳號落差建議先觀察數次再定案。
+重啟後的測試一律使用全新 session，不可恢復分頁（見上方已知風險）。
