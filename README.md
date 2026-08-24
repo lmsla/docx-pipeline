@@ -196,59 +196,14 @@ numbering: deliverable-zh
 curl -k https://<ELK_IP>:9200
 ```
 
-## 敏感詞清單（客戶名稱偵測）
+## 敏感資訊
 
-`validate` 只有在文件標示 `distribution: customer` 或 `public` 時才檢查客戶名稱，
-且需要組織自備清單——「這是不是客戶名」沒有通用樣式可判斷。
+`validate` 會擋下寫死的憑證（私鑰、AWS access key、Bearer token、明文帳密），
+不需要任何設定；文件標示 `distribution: customer` 或 `public` 時，另檢查 email
+與內網 IP。
 
-### 查找順序
-
-所有找到的檔案會**合併**生效，不是取第一個命中，因此公司共用清單與專案專屬補充可以並存：
-
-| 優先序 | 來源 | 用途 |
-|---|---|---|
-| 1 | `--denylist PATH` | 單次覆寫，通常用於 CI |
-| 2 | `DOCX_PIPELINE_DENYLIST` | 可用 `:` 分隔多個路徑 |
-| 3 | `~/.config/docx-pipeline/denylist` | **使用者層共用清單，跨機器位置固定** |
-| 4 | 自文件目錄向上的 `.docx-pipeline-denylist` | 專案專屬補充 |
-
-`~/.config` 可用 `XDG_CONFIG_HOME` 覆寫。確認實際生效的來源：
-
-```bash
-docx-pipeline doctor
-```
-
-### 跨環境共用的做法
-
-第 3 順位是關鍵：路徑與專案結構無關，在每個人的機器上都相同，即使大家的工作目錄、
-作業系統或專案佈局都不一樣。共用只要把清單同步到那個固定位置即可。
-
-清單放在公司內部的 private repository，每人執行一次：
-
-```bash
-git clone git@github.com:your-org/doc-denylist.git ~/.config/docx-pipeline/denylist-repo
-ln -sf ~/.config/docx-pipeline/denylist-repo/denylist ~/.config/docx-pipeline/denylist
-```
-
-之後更新只需要 `git -C ~/.config/docx-pipeline/denylist-repo pull`。
-
-若同事無法存取該 repository，可改指向共享磁碟或網路掛載：
-
-```bash
-export DOCX_PIPELINE_DENYLIST="/Volumes/shared/doc-denylist"
-```
-
-CI 環境建議明確指定，不要依賴 runner 的家目錄：
-
-```bash
-docx-pipeline validate doc.md --denylist "$CI_DENYLIST_PATH"
-```
-
-### 清單本身是敏感資料
-
-實際清單等同一份客戶名單，**絕不可放進公開 repository**。`.docx-pipeline-denylist`
-已列入 `.gitignore`，CI 也會擋下誤 commit。格式與註解方式見
-[`templates/denylist.example`](templates/denylist.example)，該範本不含任何實際條目。
+客戶與機構名稱**無法由工具偵測**——沒有通用樣式可判斷。去識別化的責任在文件
+產出當下，由 Skill 與撰寫者負責。不要把 `validate` 通過當成已完成去識別化。
 
 ## reference.docx
 

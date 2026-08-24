@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import os
 import re
 from urllib.parse import urlparse
 
@@ -72,7 +71,6 @@ def _looks_redacted(value: str) -> bool:
 
 # 識別類偵測。內部文件本來就需要主機名、IP 這類技術脈絡，因此嚴格程度綁在
 # frontmatter 的 distribution：internal（或未指定）只是資訊，customer / public 才是錯誤。
-DENYLIST_FILENAME = ".docx-pipeline-denylist"
 EXTERNAL_DISTRIBUTIONS = {"customer", "public", "external"}
 
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
@@ -87,76 +85,6 @@ EXAMPLE_EMAIL_DOMAINS = ("example.com", "example.org", "example.net", "test.com"
 
 def _is_external(metadata: dict[str, str]) -> bool:
     return metadata.get("distribution", "").strip().lower() in EXTERNAL_DISTRIBUTIONS
-
-
-def user_denylist_path() -> Path:
-    """使用者層清單位置，與專案結構無關，跨機器一致。"""
-    base = os.environ.get("XDG_CONFIG_HOME")
-    root = Path(base).expanduser() if base else Path.home() / ".config"
-    return root / "docx-pipeline" / "denylist"
-
-
-def denylist_sources(markdown: Path, explicit: Path | None = None) -> list[Path]:
-    """回傳所有實際存在的清單檔，依優先順序排列。
-
-    刻意**合併**而非取第一個命中：組織共用清單放在使用者層，專案專屬的補充放在
-    專案目錄，兩者應同時生效，而不是互相覆蓋。
-    """
-    candidates: list[Path] = []
-    if explicit is not None:
-        candidates.append(explicit.expanduser())
-    env_value = os.environ.get("DOCX_PIPELINE_DENYLIST")
-    if env_value:
-        # 允許以 os.pathsep 分隔多個路徑，供同時掛載多份共用清單
-        candidates.extend(Path(part).expanduser() for part in env_value.split(os.pathsep) if part)
-    candidates.append(user_denylist_path())
-
-    directory = markdown.parent.resolve()
-    candidates.extend(parent / DENYLIST_FILENAME for parent in [directory, *directory.parents])
-
-    found: list[Path] = []
-    seen: set[Path] = set()
-    for candidate in candidates:
-        try:
-            resolved = candidate.resolve()
-            if resolved in seen or not candidate.is_file():
-                continue
-            seen.add(resolved)
-            found.append(candidate)
-        except OSError:
-            continue
-    return found
-
-
-def _read_denylist_file(path: Path) -> list[str]:
-    terms: list[str] = []
-    try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return terms
-    for line in text.splitlines():
-        term = line.split("#", 1)[0].strip()
-        # 單字元詞誤報率太高，直接忽略
-        if len(term) >= 2:
-            terms.append(term)
-    return terms
-
-
-def load_denylist(markdown: Path, explicit: Path | None = None) -> list[str]:
-    """載入並合併組織自訂的敏感詞清單。
-
-    清單本身就是敏感資料（等同一份客戶名單），因此不隨 repo 散布，
-    而是由各組織放在本機或共用位置。
-    """
-    terms: list[str] = []
-    seen: set[str] = set()
-    for source in denylist_sources(markdown, explicit):
-        for term in _read_denylist_file(source):
-            lowered = term.lower()
-            if lowered not in seen:
-                seen.add(lowered)
-                terms.append(term)
-    return terms
 
 
 @dataclass(frozen=True)
@@ -471,7 +399,7 @@ def _scan_secrets(lines: list[str], start: int) -> list[ValidationIssue]:
 
 
 def _scan_identifying_info(
-    lines: list[str], start: int, denylist: list[str], external: bool
+    lines: list[str], start: int, external: bool
 ) -> list[ValidationIssue]:
     """偵測識別類資訊。
 
@@ -482,19 +410,10 @@ def _scan_identifying_info(
         return []
 
     issues: list[ValidationIssue] = []
-    lowered_terms = [(term, term.lower()) for term in denylist]
 
     for index in range(start, len(lines)):
         line = lines[index]
         line_number = index + 1
-        lowered_line = line.lower()
-
-        for original, lowered in lowered_terms:
-            if lowered in lowered_line:
-                issues.append(
-                    _issue("MD064", line_number, f"對外文件含敏感詞「{original}」，請改用代稱")
-                )
-                break
 
         match = EMAIL_RE.search(line)
         if match and not any(d in match.group(0).lower() for d in EXAMPLE_EMAIL_DOMAINS):
@@ -511,11 +430,7 @@ def _scan_identifying_info(
     return issues
 
 
-def validate_markdown(
-    markdown: Path,
-    document_type: str | None = None,
-    denylist_path: Path | None = None,
-) -> list[ValidationIssue]:
+def validate_markdown(markdown: Path, document_type: str | None = None) -> list[ValidationIssue]:
     try:
         text = markdown.read_text(encoding="utf-8")
     except UnicodeDecodeError:
@@ -560,15 +475,8 @@ def validate_markdown(
     issues.extend(_scan_tables(lines, body_start, code_lines))
     issues.extend(_scan_images_and_placeholders(lines, body_start, code_lines, markdown))
     issues.extend(_scan_secrets(lines, body_start))
-    issues.extend(
-        # 從第 0 行掃起：frontmatter 的 project、title 同樣會外洩客戶名稱
-        _scan_identifying_info(
-            lines,
-            0,
-            load_denylist(markdown, denylist_path),
-            _is_external(metadata),
-        )
-    )
+    # 從第 0 行掃起：frontmatter 的 project、title 同樣可能帶出識別資訊
+    issues.extend(_scan_identifying_info(lines, 0, _is_external(metadata)))
 
     if selected_type is not None:
         heading_names = {name for _, name in headings}

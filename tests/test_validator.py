@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from docx_pipeline.validator import load_denylist, validate_markdown
+from docx_pipeline.validator import validate_markdown
 
 
 class ValidatorTest(unittest.TestCase):
@@ -235,63 +235,20 @@ distribution: {distribution}
 """,
             encoding="utf-8",
         )
-        (Path(directory) / ".docx-pipeline-denylist").write_text(
-            "# 清單\n範例客戶\n", encoding="utf-8"
-        )
         return markdown
 
     def test_identifying_info_allowed_for_internal_documents(self):
         with tempfile.TemporaryDirectory() as directory:
             markdown = self._identifying_doc(directory, "internal")
             codes = {issue.code for issue in validate_markdown(markdown)}
-            self.assertFalse({c for c in codes if c in {"MD064", "MD065", "MD066"}})
+            self.assertFalse({c for c in codes if c in {"MD065", "MD066"}})
 
     def test_identifying_info_rejected_for_external_documents(self):
         with tempfile.TemporaryDirectory() as directory:
             markdown = self._identifying_doc(directory, "public")
             codes = {issue.code for issue in validate_markdown(markdown)}
-            self.assertIn("MD064", codes)
             self.assertIn("MD065", codes)
             self.assertIn("MD066", codes)
-
-    def test_denylist_matches_frontmatter(self):
-        with tempfile.TemporaryDirectory() as directory:
-            markdown = self._identifying_doc(directory, "customer")
-            hits = [i for i in validate_markdown(markdown) if i.code == "MD064"]
-            # project: 範例客戶 POC 位於 frontmatter，必須被涵蓋
-            self.assertTrue(any(i.line <= 8 for i in hits))
-
-    def test_denylist_sources_are_merged_not_shadowed(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            shared = root / "shared-denylist"
-            shared.write_text("# 共用\n共用客戶\n", encoding="utf-8")
-
-            project = root / "project"
-            project.mkdir()
-            (project / ".docx-pipeline-denylist").write_text(
-                "# 專案\n專案代號\n", encoding="utf-8"
-            )
-            markdown = project / "note.md"
-            markdown.write_text("placeholder", encoding="utf-8")
-
-            terms = load_denylist(markdown, shared)
-            # 專案層不應覆蓋共用層，兩者都要生效
-            self.assertIn("共用客戶", terms)
-            self.assertIn("專案代號", terms)
-
-    def test_denylist_entries_are_deduplicated(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            shared = root / "shared-denylist"
-            shared.write_text("重複詞\n", encoding="utf-8")
-            project = root / "project"
-            project.mkdir()
-            (project / ".docx-pipeline-denylist").write_text("重複詞\n", encoding="utf-8")
-            markdown = project / "note.md"
-            markdown.write_text("placeholder", encoding="utf-8")
-
-            self.assertEqual(load_denylist(markdown, shared).count("重複詞"), 1)
 
 
 

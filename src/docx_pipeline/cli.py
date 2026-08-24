@@ -167,19 +167,6 @@ def doctor(_: argparse.Namespace) -> int:
             "(自備企業模板，另存為 templates/reference.docx 或用 --reference-doc 指定)"
         )
 
-    from .validator import denylist_sources, load_denylist, user_denylist_path
-
-    probe = Path.cwd() / "_"
-    sources = denylist_sources(probe)
-    if sources:
-        terms = load_denylist(probe)
-        print(f"denylist: {len(terms)} 個詞，來自 {len(sources)} 個檔案")
-        for source in sources:
-            print(f"  - {source}")
-    else:
-        print("denylist: 未設定（僅影響對外文件的客戶名稱檢查）")
-        print(f"  使用者層預期位置：{user_denylist_path()}")
-
     return 0
 
 
@@ -189,11 +176,7 @@ def validate(args: argparse.Namespace) -> int:
         raise RuntimeError(f"Markdown file not found: {markdown}")
 
     try:
-        issues = validate_markdown(
-            markdown,
-            document_type=args.document_type,
-            denylist_path=Path(args.denylist).expanduser() if args.denylist else None,
-        )
+        issues = validate_markdown(markdown, document_type=args.document_type)
     except OSError as exc:
         raise RuntimeError(f"Cannot read Markdown file: {markdown}: {exc}") from exc
     for issue in issues:
@@ -250,14 +233,6 @@ def make_parser() -> argparse.ArgumentParser:
         choices=("engineering-note", "enterprise-sop"),
         default=None,
         help="Document type override when frontmatter document_type is unavailable or custom",
-    )
-    validate_parser.add_argument(
-        "--denylist",
-        default=None,
-        help=(
-            "組織自訂敏感詞清單。未指定時依序尋找 DOCX_PIPELINE_DENYLIST 環境變數，"
-            "以及自 Markdown 所在目錄向上的 .docx-pipeline-denylist"
-        ),
     )
     validate_parser.set_defaults(func=validate)
 

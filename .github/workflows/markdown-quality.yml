@@ -119,14 +119,6 @@ jobs:
           fi
           echo "reference.docx correctly absent from version control"
 
-      - name: Reject committed denylist
-        run: |
-          if git ls-files | grep -q '\.docx-pipeline-denylist$'; then
-            echo "A .docx-pipeline-denylist holds customer names and must never be committed." >&2
-            exit 1
-          fi
-          echo "denylist correctly absent from version control"
-
       - name: Check Skill resources
         run: |
           test -s templates/ai-agent-markdown-rules.md

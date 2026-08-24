@@ -5,7 +5,12 @@ description: Create or revise Engineering Note and Enterprise SOP Markdown using
 
 # docx-pipeline 文件編寫
 
-本 Skill 只負責產出符合規範的 Markdown。它不執行 CLI、不執行 Pandoc、不產出 DOCX，也不宣稱文件已通過機器驗證。
+本 Skill 是「AI 整理筆記或 SOP 時的文件產出規範」。它只負責產出符合規範的 Markdown，
+不執行 CLI、不執行 Pandoc、不產出 DOCX，也不宣稱文件已通過機器驗證。
+DOCX 轉換由使用者的平台或 CI 在此工作流程之外處理。
+
+因此**合規的責任在產出當下**：交付的 Markdown 本身就必須已經去識別化，
+不能倚賴下游有沒有人跑驗證。
 
 ## 工作流程
 
@@ -45,6 +50,9 @@ description: Create or revise Engineering Note and Enterprise SOP Markdown using
 
    frontmatter 若已有 `distribution`（`internal` / `customer` / `public`），
    直接依該值判斷，不需重複詢問；沒有時才問使用者，並把答覆寫回 `distribution`。
+
+   判斷某個字串是不是敏感資訊時（例如分不清 `es-prod-01.corp.example` 是真實主機
+   還是範例），不要自行猜測，直接問使用者。
 
    詢問時要具體列出偵測到的項目與所在章節，例如「內文出現客戶名稱『OO 醫院』與
    主機 `es-prod-01.corp.local`，這份文件會對外嗎？需要改成代稱嗎？」
