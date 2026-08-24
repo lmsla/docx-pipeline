@@ -49,6 +49,14 @@ claude plugin install docx-pipeline@docx-pipeline-marketplace --scope user
 
 本 Marketplace 使用 `source: "."` 將 repo root 作為 Plugin；需使用支援此來源格式的 Claude Code 版本。Claude Code `v2.1.241` 已符合目前需求。
 
+`lmsla/docx-pipeline` 必須維持 public，marketplace 才能以 `source: github` 解析。
+若改回 private，或改用 `source: directory` 指向本機路徑，安裝會綁死在單一機器的絕對路徑，
+在 work 模式或其他機器上就會失效。可用以下指令確認實際登記的來源型態：
+
+```bash
+python3 -c "import json;print(json.load(open('$HOME/.claude/plugins/known_marketplaces.json'))['docx-pipeline-marketplace']['source'])"
+```
+
 ```text
 /plugin marketplace update docx-pipeline-marketplace
 /reload-plugins

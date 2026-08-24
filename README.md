@@ -46,7 +46,11 @@ plugin.json                      # Antigravity
 /reload-plugins
 ```
 
-每台電腦仍須具備 private repository 的 GitHub 權限；SSH 安裝需要可用的 SSH key 與 `ssh-agent`。
+本 repo 為公開 repository，因此任何機器都能直接安裝，不需要 GitHub 憑證、SSH key 或 `ssh-agent`。
+安裝時請選擇 `User scope`，即可跨專案、跨重啟、跨 chat 與 work 模式持續使用。
+
+> 不要使用 `claude --plugin-dir .`，也不要以本機目錄註冊 marketplace。
+> 目錄來源會把安裝綁死在單一絕對路徑，換資料夾或換執行環境就會失效。
 
 ### 方案 B：Release Binary
 
@@ -203,7 +207,14 @@ curl -k https://<ELK_IP>:9200
 - 表格樣式
 - 字型設定
 
-目前此 repo 不內建文件內容。請把企業模板另存為 `templates/reference.docx`。
+本 repo **不散布** `templates/reference.docx`，該路徑已列入 `.gitignore`。
+請自行把企業 Word 模板另存為 `templates/reference.docx`，或每次以 `--reference-doc PATH` 指定。
+
+確認目前是否備妥：
+
+```bash
+docx-pipeline doctor
+```
 
 ## AI agent Plugin 封裝
 

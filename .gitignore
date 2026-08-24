@@ -15,3 +15,6 @@ build/
 dist/
 docx-pipeline.spec
 release/
+
+# 企業 Word 樣式母體：本機自備，不隨公開 repo 散布
+templates/reference.docx

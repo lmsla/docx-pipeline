@@ -91,7 +91,11 @@ def build(args: argparse.Namespace) -> int:
     if not markdown.exists():
         raise RuntimeError(f"Markdown file not found: {markdown}")
     if not reference_doc.exists():
-        raise RuntimeError(f"Reference DOCX not found: {reference_doc}")
+        raise RuntimeError(
+            f"Reference DOCX not found: {reference_doc}\n"
+            "reference.docx 是自備的企業 Word 樣式母體，不隨 repo 散布。\n"
+            "請將企業模板另存到 templates/reference.docx，或用 --reference-doc PATH 指定。"
+        )
 
     output.parent.mkdir(parents=True, exist_ok=True)
 
@@ -153,6 +157,15 @@ def doctor(_: argparse.Namespace) -> int:
         print("python-docx: installed")
     except ModuleNotFoundError:
         print("python-docx: missing (install with: pip install python-docx)")
+
+    reference_doc = resource_path("templates/reference.docx")
+    if reference_doc.exists():
+        print(f"reference.docx: {reference_doc}")
+    else:
+        print(
+            "reference.docx: missing "
+            "(自備企業模板，另存為 templates/reference.docx 或用 --reference-doc 指定)"
+        )
 
     return 0
 

@@ -71,6 +71,8 @@ jobs:
           python - <<'PY'
           import json
 
+          plugin = json.load(open(".claude-plugin/plugin.json", encoding="utf-8"))
+
           antigravity = json.load(open("plugin.json", encoding="utf-8"))
           assert antigravity["name"] == "docx-pipeline"
           assert antigravity["description"]
@@ -83,6 +85,37 @@ jobs:
           assert codex["interface"]["displayName"]
           assert codex["interface"]["defaultPrompt"]
           PY
+
+      - name: Check version consistency
+        run: |
+          python - <<'PY'
+          import json, re, pathlib
+
+          plugin = json.load(open(".claude-plugin/plugin.json", encoding="utf-8"))["version"]
+          codex = json.load(open(".codex-plugin/plugin.json", encoding="utf-8"))["version"]
+          market = json.load(open(".claude-plugin/marketplace.json", encoding="utf-8"))["plugins"][0]["version"]
+          pyproject = re.search(r'^version = "(.+?)"', pathlib.Path("pyproject.toml").read_text(), re.M).group(1)
+          setup = re.search(r'version="(.+?)"', pathlib.Path("setup.py").read_text()).group(1)
+
+          versions = {
+              ".claude-plugin/plugin.json": plugin,
+              ".codex-plugin/plugin.json": codex,
+              ".claude-plugin/marketplace.json": market,
+              "pyproject.toml": pyproject,
+              "setup.py": setup,
+          }
+          if len(set(versions.values())) != 1:
+              raise SystemExit(f"version mismatch: {versions}")
+          print(f"all manifests agree on version {plugin}")
+          PY
+
+      - name: Reject committed reference.docx
+        run: |
+          if git ls-files --error-unmatch templates/reference.docx >/dev/null 2>&1; then
+            echo "templates/reference.docx must not be committed (public repo)." >&2
+            exit 1
+          fi
+          echo "reference.docx correctly absent from version control"
 
       - name: Check Skill resources
         run: |
