@@ -2,7 +2,7 @@
 title: docx-pipeline 整合規格
 project: docx-pipeline
 document_type: Spec
-version: 0.1.0
+version: 0.1.1
 date: 2026-08-23
 owner: lmsla
 audience: 開發者 / 維護者 / 工作流整合者
@@ -16,7 +16,7 @@ numbering: engineering
 
 本文件定義 `docx-pipeline` 目前版本的可整合行為，讓其他 CLI、AI agent、CI/CD 或文件工作流可以用固定契約呼叫本工具。
 
-本文件以目前程式碼與 `0.1.0` 專案版本為準。標示為「限制」的內容不屬於可依賴的保證；標示為「未支援」的能力不應由整合方自行假設存在。
+本文件以目前程式碼與 `0.1.1` 專案版本為準。標示為「限制」的內容不屬於可依賴的保證；標示為「未支援」的能力不應由整合方自行假設存在。
 
 ## 1. 產品定位
 
@@ -339,6 +339,10 @@ pipeline 會嘗試套用以下基礎設定：
 templates/reference.docx
 ```
 
+本 repo **不散布** `templates/reference.docx`（已列入 `.gitignore`，並由 CI 檢查不得再次進入版控）。
+該路徑是使用者自備的企業 Word 樣式母體。檔案不存在時 `build` 會以非零退出碼中止，
+並提示改用 `--reference-doc`；`doctor` 會回報目前是否備妥。
+
 若使用自訂企業模板，應明確傳入：
 
 ```bash
@@ -439,11 +443,11 @@ templates/enterprise-sop-template.md
 
 Skill 只負責選擇文件類型、載入規則與整理 Markdown。它不應複製模板、不應執行 CLI、不應產出 DOCX，也不應宣稱已完成未執行的驗證。`validate` 與 `build` 屬於使用者或 CI 的下游流程，不是 AI agent Skill 的責任。
 
-Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式使用時，使用者將 private GitHub repository 加入 Marketplace，並以 `User scope` 安裝 `docx-pipeline`；`claude --plugin-dir` 僅供本地開發與單次測試，不是交付流程。Marketplace 更新後，使用者以 Marketplace update 取得新的 Plugin 與模板版本。
+Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式使用時，使用者將公開 GitHub repository `lmsla/docx-pipeline` 加入 Marketplace，並以 `User scope` 安裝 `docx-pipeline`；Marketplace 必須以 `source: github` 註冊，不可使用指向本機路徑的 `source: directory`，否則安裝會綁定單一絕對路徑，換執行環境即失效；`claude --plugin-dir` 僅供本地開發與單次測試，不是交付流程。Marketplace 更新後，使用者以 Marketplace update 取得新的 Plugin 與模板版本。
 
 ## 8. 版本與相容性
 
-目前專案版本為 `0.1.0`，仍屬早期版本。整合方不應假設 `0.x` 版本具有完整的長期相容保證。
+目前專案版本為 `0.1.1`，仍屬早期版本。整合方不應假設 `0.x` 版本具有完整的長期相容保證。
 
 以下變更應視為可能影響整合的 breaking change：
 
@@ -500,7 +504,7 @@ Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式
 | `templates/reference.docx` | Word 視覺樣式與企業模板 |
 | `src/docx_pipeline/validator.py` | Markdown 結構與資產驗證 |
 | `.claude-plugin/plugin.json` | Claude Code Plugin metadata |
-| `.claude-plugin/marketplace.json` | Claude Code private Marketplace catalog |
+| `.claude-plugin/marketplace.json` | Claude Code Marketplace catalog（公開 repo） |
 | `plugin.json` | Antigravity Plugin metadata |
 | `.codex-plugin/plugin.json` | Codex Plugin metadata |
 | `skills/docx-authoring/SKILL.md` | 三平台共用的 Markdown 文件編寫工作流程 |

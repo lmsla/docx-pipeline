@@ -54,7 +54,7 @@ plugin.json                      # Antigravity
 
 ### 方案 B：Release Binary
 
-已打包版本位於：
+本 repo 不散布已打包的 binary。先自行打包（見下方「重新打包」），產物會位於：
 
 ```text
 release/docx-pipeline/docx-pipeline
