@@ -44,6 +44,31 @@ TEMPLATE_PLACEHOLDERS = {
 }
 
 
+# 憑證偵測。刻意採高精確度樣式，寧可漏報也不要誤擋合法的技術內容——
+# 語意層的客戶名、主機名判斷交給 Skill 與人工複核，validator 只抓機器可確認的部分。
+PRIVATE_KEY_RE = re.compile(r"-----BEGIN[ A-Z]*PRIVATE KEY-----")
+AWS_ACCESS_KEY_RE = re.compile(r"\bAKIA[0-9A-Z]{16}\b")
+BEARER_RE = re.compile(r"\bBearer\s+[A-Za-z0-9._\-]{20,}")
+SECRET_ASSIGN_RE = re.compile(
+    r"\b(password|passwd|pwd|token|api[_-]?key|apikey|secret|access[_-]?key|client[_-]?secret)"
+    r"\s*[:=]\s*[\"']?([^\s\"',;]{8,})",
+    re.IGNORECASE,
+)
+# curl -u user:pass 這類把帳密寫進指令的寫法
+CURL_USERPASS_RE = re.compile(r"-[uU]\s+[^\s:]+:([^\s\"']{4,})")
+
+# 已去識別化的值不該被當成外洩。涵蓋角括號 placeholder、遮罩、環境變數與明顯的範例值。
+REDACTED_HINTS = (
+    "<", ">", "***", "xxx", "your", "changeme", "change_me", "redacted", "example",
+    "placeholder", "dummy", "sample", "${", "{{", "%s", "...", "____",
+)
+
+
+def _looks_redacted(value: str) -> bool:
+    lowered = value.lower()
+    return any(hint in lowered for hint in REDACTED_HINTS)
+
+
 @dataclass(frozen=True)
 class ValidationIssue:
     code: str
@@ -315,6 +340,46 @@ def _scan_images_and_placeholders(
     return issues
 
 
+def _scan_secrets(lines: list[str], start: int) -> list[ValidationIssue]:
+    """偵測寫死的憑證。
+
+    與其他檢查不同，這裡**不跳過 fenced code block**——指令與設定範例正是憑證最常
+    出現的地方。已用 placeholder 或環境變數遮蔽的值不視為外洩。
+    """
+    issues: list[ValidationIssue] = []
+    for index in range(start, len(lines)):
+        line = lines[index]
+        line_number = index + 1
+
+        if PRIVATE_KEY_RE.search(line):
+            issues.append(_issue("MD060", line_number, "文件內含私鑰內容，請移除並改以安全管道傳遞"))
+            continue
+
+        match = AWS_ACCESS_KEY_RE.search(line)
+        if match:
+            issues.append(_issue("MD061", line_number, f"疑似 AWS access key ID：{match.group(0)}"))
+            continue
+
+        if BEARER_RE.search(line):
+            issues.append(_issue("MD062", line_number, "文件內含 Bearer token，請以 \\<TOKEN\\> 之類的 placeholder 取代"))
+            continue
+
+        match = SECRET_ASSIGN_RE.search(line)
+        if match and not _looks_redacted(match.group(2)):
+            issues.append(
+                _issue("MD063", line_number, f"疑似寫死的憑證：{match.group(1)} 的值請改為 placeholder")
+            )
+            continue
+
+        match = CURL_USERPASS_RE.search(line)
+        if match and not _looks_redacted(match.group(1)):
+            issues.append(
+                _issue("MD063", line_number, "指令中含明文帳號密碼，請改用 placeholder 或改從環境變數讀取")
+            )
+
+    return issues
+
+
 def validate_markdown(markdown: Path, document_type: str | None = None) -> list[ValidationIssue]:
     try:
         text = markdown.read_text(encoding="utf-8")
@@ -359,6 +424,7 @@ def validate_markdown(markdown: Path, document_type: str | None = None) -> list[
     issues.extend(structure_issues)
     issues.extend(_scan_tables(lines, body_start, code_lines))
     issues.extend(_scan_images_and_placeholders(lines, body_start, code_lines, markdown))
+    issues.extend(_scan_secrets(lines, body_start))
 
     if selected_type is not None:
         heading_names = {name for _, name in headings}

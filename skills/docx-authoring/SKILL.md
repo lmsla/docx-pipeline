@@ -28,7 +28,30 @@ description: Create or revise Engineering Note and Enterprise SOP Markdown using
 
 5. 依模板整理內容，完整保留使用者提供的技術細節、指令、輸出、圖片與證據；不得把推測寫成已驗證結果。
 6. 文件類型不明確時，先詢問使用者，不要自行混用兩種模板。
-7. 只寫入或回傳 Markdown 檔案，不觸發 `docx-pipeline`、Pandoc、DOCX build 或其他轉檔程序。驗證與 DOCX 轉換由使用者或 CI 在 Skill 工作流程之外執行。
+7. 交付前執行敏感資訊自檢，涵蓋正文、表格、圖說與 code block。分兩級處理：
+
+   **憑證類——一律不得寫入，直接以 placeholder 取代，不需要詢問：**
+   密碼、API key、token、session cookie、憑證私鑰、連線字串或指令中的明文帳密
+   （例如 `curl -u user:pass`）。取代後在回報中列出取代了哪些項目，讓使用者知道
+   原始值需要另循安全管道傳遞。
+
+   **識別類——標示並詢問使用者，不得自行刪改：**
+   客戶或機構名稱、專案代號、真實主機名與網域、內網 IP、人員姓名與 email、
+   內部系統 URL、工單編號。這類資訊在內部文件中往往是必要的技術脈絡，
+   是否去識別化取決於文件去向，必須由使用者決定：
+
+   - 內部技術筆記：通常原樣保留。
+   - 交付客戶、對外簡報、公開 repository：先詢問是否改用代稱。
+
+   frontmatter 若已有 `distribution`（`internal` / `customer` / `public`），
+   直接依該值判斷，不需重複詢問；沒有時才問使用者，並把答覆寫回 `distribution`。
+
+   詢問時要具體列出偵測到的項目與所在章節，例如「內文出現客戶名稱『OO 醫院』與
+   主機 `es-prod-01.corp.local`，這份文件會對外嗎？需要改成代稱嗎？」
+
+   不確定屬於哪一級時，一律標示並詢問，不要自行判定為安全。
+
+8. 只寫入或回傳 Markdown 檔案，不觸發 `docx-pipeline`、Pandoc、DOCX build 或其他轉檔程序。驗證與 DOCX 轉換由使用者或 CI 在 Skill 工作流程之外執行。
 
 ## 寫作約束
 
@@ -41,6 +64,8 @@ description: Create or revise Engineering Note and Enterprise SOP Markdown using
 - 圖片使用相對路徑與空 alt，例如 `![](images/example.png)`；圖說另起一行。
 - 一般文字中的 placeholder 要跳脫角括號，例如 `\<ELK_IP\>`；code block 內不需要跳脫。
 - 不為了符合模板而刪除原始內容；不確定的內容標記為待確認、風險或待辦事項。
+- 敏感資訊自檢是「標示並詢問」，不是「自動塗改」。除憑證類以外，不得因為看起來敏感就
+  刪除或改寫技術內容——那會破壞文件的可重現性。
 
 ## 交付回報
 
@@ -50,5 +75,6 @@ description: Create or revise Engineering Note and Enterprise SOP Markdown using
 - 選用的文件類型與模板
 - 使用的 `author` 值，以及該值的來源（使用者告知／沿用原文件）
 - 是否完整保留原始技術內容
+- 敏感資訊自檢結果：已取代的憑證項目，以及待使用者確認的識別類資訊
 - 尚未確認的事實、需要補充的欄位或待辦事項
 - 明確說明本 Skill 未執行 CLI 驗證與 DOCX 轉換

@@ -79,6 +79,8 @@ status: draft
 | `author` | 實際撰寫這份文件的人 | `Russell` |
 | `owner` | 後續負責維護的單位或人員 | `平台維運組` |
 
+選填的 `distribution` 用於記錄文件去向（`internal` / `customer` / `public`），供敏感資訊自檢判斷是否需要去識別化，詳見「敏感資訊規則」。
+
 validator 會擋下缺少 `author`（MD005），也會擋下仍是模板佔位值的欄位（MD009），
 例如 `撰寫者姓名`、`專案名稱`、`YYYY-MM-DD`、`TBD`。複製模板後必須逐欄填寫實際內容。
 
@@ -102,6 +104,35 @@ numbering: deliverable-zh
 ```
 
 Enterprise SOP 的 `version`、`owner`、`audience`、`status` 與 `numbering` 不應省略。日常 Engineering Note 不需要強制套用完整 SOP metadata。
+
+## 敏感資訊規則
+
+文件交付前必須自檢敏感資訊，涵蓋正文、表格、圖說與 code block。分兩級處理，
+差別在於「是否需要問使用者」：
+
+| 級別 | 內容 | 處置 |
+|---|---|---|
+| 憑證類 | 密碼、API key、token、session cookie、私鑰、指令中的明文帳密 | 一律以 placeholder 取代，不需詢問 |
+| 識別類 | 客戶或機構名稱、專案代號、真實主機名與網域、內網 IP、人員姓名與 email、工單編號 | 標示並詢問使用者，不得自行刪改 |
+
+憑證類請改寫為 placeholder 或環境變數：
+
+```bash
+curl -u elastic:\<ELASTIC_PASSWORD\> https://\<ELK_IP\>:9200
+export API_KEY="${ELASTIC_API_KEY}"
+```
+
+`docx-pipeline validate` 會擋下寫死的憑證（`MD060`–`MD063`），但只涵蓋機器可判斷的樣式。
+客戶名稱、主機名這類語意判斷無法自動化，仍須由 AI 標示、由人確認。
+
+識別類資訊在內部文件中往往是必要的技術脈絡，**不可因為看起來敏感就刪除**，
+那會破壞文件的可重現性。是否去識別化取決於文件去向，可用選填的 `distribution` 欄位記錄：
+
+```yaml
+distribution: internal   # internal（預設）/ customer / public
+```
+
+`distribution: internal` 通常原樣保留；`customer` 與 `public` 應先確認是否改用代稱。
 
 ## 清單規則
 
@@ -276,6 +307,9 @@ CLI 產出的 DOCX 使用 Word 原生目錄。開啟檔案後若目錄頁碼顯�
 - [ ] 圖片路徑可被轉換工具讀取
 - [ ] 一般段落、清單、表格中的 `<PLACEHOLDER>` 已跳脫或改寫
 - [ ] 內容完整，沒有為了排版刪減資訊
+- [ ] `author` 已填入實際撰寫者姓名，沒有留著模板佔位值
+- [ ] 憑證類資訊（密碼、API key、token、私鑰、指令中的明文帳密）已改為 placeholder
+- [ ] 識別類資訊（客戶名稱、主機名、內網 IP、人員 email）已標示並與使用者確認去留
 
 ### Engineering Note
 

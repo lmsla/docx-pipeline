@@ -118,6 +118,10 @@ docx-pipeline validate <input.md> [--type engineering-note|enterprise-sop]
 - fenced code block 必須有語言標籤且必須閉合。
 - 整份文件不得保留聊天傳輸用的外層 `markdown` fenced code block；若誤存，回傳 `MD012`。
 - frontmatter 欄位若仍是模板佔位值（例如 `撰寫者姓名`、`專案名稱`、`YYYY-MM-DD`、`TBD`），回傳 `MD009`。
+- 文件內含寫死的憑證時回傳 `MD060`–`MD063`：私鑰（`MD060`）、AWS access key ID（`MD061`）、
+  Bearer token（`MD062`）、密碼與 API key 指派或指令中的明文帳密（`MD063`）。
+  此檢查**不跳過 fenced code block**，因為憑證最常出現在指令與設定範例中；
+  已改為 placeholder、遮罩或環境變數的值不會觸發。
 - Markdown pipe table 的表頭、分隔列與資料列欄數。
 - 相對圖片路徑是否存在；HTTP、HTTPS 與 data URL 不由本命令下載或檢查。
 - 一般文字中的未跳脫 placeholder 角括號。
@@ -173,6 +177,7 @@ Pandoc 的尋找順序如下：
 | `guide` | 封面導引文字，優先於 `document_type` |
 | `document_type` | 封面導引文字的替代欄位 |
 | `author` | 撰寫者姓名；寫入封面「撰寫者」列與 DOCX core properties |
+| `distribution` | 文件去向（`internal` / `customer` / `public`）；供 AI 判斷是否需要去識別化，工具本身不使用 |
 | `file_name` | 封面「文件名稱」欄位，未提供時使用 `title` |
 | `version` | 封面版本欄位 |
 | `date` | 封面建立日期；未提供時使用執行當日日期 |
@@ -472,6 +477,8 @@ Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式
 - release 目前以 macOS arm64 為主要打包目標。
 - 沒有完整的自動化測試與 DOCX 視覺回歸測試。
 - validator 只能檢查結構與檔案存在性，不能保證技術事實、指令結果或圖片語意正確。
+- 憑證偵測採高精確度樣式，刻意寧可漏報也不誤擋；客戶名稱、主機名這類語意判斷無法自動化，
+  仍須由撰寫者與複核者負責，不可將 `validate` 通過視為已完成去識別化。
 - Claude Code Skill 是否被載入與遵循，取決於 AI 工作流與使用者授權，不能視為強制閘門。
 - `doctor` 目前不以缺少依賴作為非零退出碼。
 - 編號建置使用固定名稱的同目錄暫存 Markdown，不適合相同來源的平行建置。

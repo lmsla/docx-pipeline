@@ -154,6 +154,64 @@ status: draft
             self.assertTrue(placeholder)
             self.assertIn("author", placeholder[0].message)
 
+    def test_hardcoded_secret_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory) / "note.md"
+            markdown.write_text(
+                """---
+title: 測試筆記
+project: 測試專案
+document_type: Engineering Note
+author: Russell
+date: 2026-08-23
+status: draft
+---
+
+# 摘要
+
+內容。
+
+# 背景與問題
+
+```bash
+curl -u elastic:S3cr3tP4ssw0rd https://es.example.com:9200
+export API_KEY=aQ82ndPqR91xLmZ0
+```
+""",
+                encoding="utf-8",
+            )
+            codes = {issue.code for issue in validate_markdown(markdown)}
+            self.assertIn("MD063", codes)
+
+    def test_redacted_credentials_are_allowed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory) / "note.md"
+            markdown.write_text(
+                """---
+title: 測試筆記
+project: 測試專案
+document_type: Engineering Note
+author: Russell
+date: 2026-08-23
+status: draft
+---
+
+# 摘要
+
+內容。
+
+# 背景與問題
+
+```bash
+curl -u elastic:<ELASTIC_PASSWORD> https://<ELK_IP>:9200
+export API_KEY="${ELASTIC_API_KEY}"
+```
+""",
+                encoding="utf-8",
+            )
+            codes = {issue.code for issue in validate_markdown(markdown)}
+            self.assertFalse({c for c in codes if c.startswith("MD06")})
+
 
 if __name__ == "__main__":
     unittest.main()
