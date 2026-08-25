@@ -1,6 +1,6 @@
 {
   "name": "docx-pipeline",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Create structured Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery.",
   "author": {
     "name": "docx-pipeline maintainers"
