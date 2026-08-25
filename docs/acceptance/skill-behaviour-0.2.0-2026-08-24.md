@@ -62,7 +62,7 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 | B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | PASS | 實際驗證方式更嚴格：AI 逐字引用 description 全文（含 ONLY / Do NOT 兩層限制），與 0.2.2 原檔逐字比對相符，非僅步驟計數 |
 | B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | N/A | 2026-08-24 實測：work/cowork 模式讀取帳號層級 Skills（`/root/.claude/skills/synced/`），不是 Claude Code plugin marketplace（`~/.claude/plugins/`）。兩套機制互不相通，找不到 `docx-authoring` 是預期結果，非缺陷。需另外以 zip 上傳帳號層級 Skills 才能涵蓋此發佈通路，見已知風險 |
 | B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | PASS（重測後） | 2026-08-24 於全新 session 重測：貼入技術討論但未要求整理，Skill 未觸發，僅接續技術對話並主動詢問「需要的話我可以整理成筆記」；description 修正確認有效 |
-| B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | | |
+| B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | PASS | 2026-08-24 實測：正常觸發並完整跑完流程；即使記憶顯示同資料夾其他筆記署名 Russell，仍依規則詢問 author 而非自動代入；正確判斷 distribution: customer 但內容無識別類資訊，無需改代稱。過程中一次 Connection problem，恢復後正確接續完成，判定為環境暫時性問題非邏輯缺陷 |
 
 ## 文件類型判斷
 
