@@ -3,7 +3,7 @@ title: docx-authoring Skill 於 Claude Code 安裝作業手冊
 project: docx-pipeline
 document_type: SOP
 author: Russell
-version: 1.2
+version: 1.3
 date: 2026-08-25
 owner: docx-pipeline 維護者
 audience: 開發人員 / 維運人員
@@ -18,6 +18,7 @@ numbering: engineering
 | 2026-08-25 | 1.0 | 初版 | Russell |
 | 2026-08-25 | 1.1 | 補充 Team/Enterprise 管理員限制與驗證步驟 | Russell |
 | 2026-08-25 | 1.2 | 補充斜線指令與 shell 指令的差異，修正實際安裝時發現的 `zsh: no such file or directory: /plugin` 錯誤 | Russell |
+| 2026-08-25 | 1.3 | 新增方式三（Claude Desktop 圖形化介面），已實測跨專案安裝範圍與方式一、二相同 | Russell |
 
 # 文件說明
 
@@ -151,6 +152,19 @@ claude plugin install docx-pipeline@docx-pipeline-marketplace --scope user
 兩者效果相同，方式二的開頭是 `claude` 執行檔本身、沒有斜線。
 
 安裝 Plugin 時選擇 `User scope`（方式二已在指令中以 `--scope user` 指定）。
+
+**方式三：Claude Desktop 圖形化介面，不需要打指令**
+
+適合不熟終端機操作的同事。已於實際安裝中驗證，安裝範圍與方式一、二相同
+（跨專案可用，非綁定單一資料夾）：
+
+1. 開啟 Settings → Plugins。
+2. 點右上角 **Add** → **Add marketplace**。
+3. 在跳出的對話框的 URL 欄位輸入 `lmsla/docx-pipeline`，點 **Sync**。
+4. 點 **Browse**，切到 **Code** 分頁，會看到 `docx-pipeline-marketplace`。
+5. 點進其中的 **Docx pipeline**，點 **Install**。
+6. 安裝完成後，該頁面按鈕會從 `Install` 變成 `Manage` / `Remove`，
+   下方 **Skills** 會列出 `/docx-authoring`。
 
 ### 預期結果
 
