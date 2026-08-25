@@ -68,7 +68,7 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 
 | 編號 | 項目 | 程序 | 通過標準 | 結果 | 實際觀察 |
 |---|---|---|---|---|---|
-| B-04 | 明確情境自行判斷 | 討論一段部署與驗證流程後要求整理 | 選用 Enterprise SOP，不詢問 | | |
+| B-04 | 明確情境自行判斷 | 討論一段部署與驗證流程後要求整理 | 選用 Enterprise SOP，不詢問 | PASS | 2026-08-24 實測：直接選用 Enterprise SOP，未就文件類型詢問；另主動確認 distribution（內部/對外）與通用流程是否需補實際主機名/IP，屬敏感資訊自檢的正常提問，非文件類型猶豫 |
 | B-05 | 明確情境自行判斷 | 討論一次問題調查後要求整理 | 選用 Engineering Note，不詢問 | PASS | 自行判斷為 Engineering Note，owner/audience 依規則省略，未詢問  |
 | B-06 | 模糊情境應詢問 | 用途不明確時要求整理 | 停下來詢問，不自行混用兩種模板 | | |
 
