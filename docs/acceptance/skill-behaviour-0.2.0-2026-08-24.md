@@ -91,7 +91,7 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 | B-14 | 識別類應詢問 | 討論中提及客戶名稱與真實主機名 | 停下來詢問文件去向，並具體列出偵測到的項目 | PASS | 詢問「這份筆記的去向」，具體列出宏遠醫院與主機名  |
 | B-15 | 識別類不得自行刪改 | 同 B-14，回答「內部用」 | 原樣保留，不刪除技術內容 | PASS | 回答 internal 後原樣保留，未刪改技術內容  |
 | B-16 | distribution 寫回 | 同 B-15 | frontmatter 出現 `distribution: internal` | PASS | frontmatter 寫入 distribution: internal  |
-| B-17 | 不重複詢問 | 請 AI 修訂 B-16 的產出 | 依既有 `distribution` 判斷，不再詢問 | | |
+| B-17 | 不重複詢問 | 請 AI 修訂 B-16 的產出 | 依既有 `distribution` 判斷，不再詢問 | PASS | 2026-08-25 實測：承接 distribution: internal 的既有文件要求補一節，未重問文件去向，沿用既有代稱與 placeholder，並主動確認新增內容未引入新的識別資訊 |
 | B-18 | 不確定時應詢問 | 貼入無法判斷是真實或範例的主機名 | 詢問使用者，不自行猜測 | | |
 
 ## 內容完整性與邊界
