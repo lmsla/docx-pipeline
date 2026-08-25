@@ -14,6 +14,7 @@ Markdown -> pandoc 套 reference.docx -> python-docx 後處理 -> output.docx
 - [企業 SOP 模板](templates/enterprise-sop-template.md)：可直接複製使用的文件骨架
 - [Claude Code Skill](skills/docx-authoring/SKILL.md)：引導 AI 選擇模板與整理文件
 - [三平台 Skill 安裝與驗收](docs/skill-installation.md)：Claude Code、Antigravity、Codex 的封裝與範圍
+- [Claude Code 安裝作業手冊](docs/claude-code-install-sop.md)：給同事的安裝、驗證與排錯步驟
 
 ## 使用方式
 
