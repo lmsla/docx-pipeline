@@ -231,3 +231,28 @@ docx-pipeline doctor
 ## AI agent Plugin 封裝
 
 repo 根目錄包含 Claude Code、Antigravity 與 Codex 的 Plugin manifest，以及共用的 `skills/docx-authoring/SKILL.md`。Plugin 負責引導 AI 使用規則與模板；`docx-pipeline` CLI 負責下游驗證與 DOCX 轉換。兩者版本應一起管理，但 CLI 不由 Skill 自動觸發，也不要在 Skill 中複製模板內容。
+
+## claude.ai / Claude Desktop 一般聊天（work / cowork 模式）
+
+Claude Code plugin marketplace 與 claude.ai／Claude Desktop 一般聊天讀取的是兩套
+互不相通的機制：前者讀 `~/.claude/plugins/`，後者讀帳號層級 Skills（zip 上傳）。
+work/cowork 模式與 claude.ai 聊天走的是後者，需要另外打包上傳，`/plugin install`
+涵蓋不到。
+
+打包：
+
+```bash
+packaging/build-claude-skill-zip.sh
+```
+
+會在 `dist/docx-authoring.zip` 產出可上傳的檔案。帳號層級 Skill 的資料夾結構與
+Claude Code plugin 不同——所有隨附資源必須跟 `SKILL.md` 放在同一層之下，因此
+腳本會把 `templates/*.md` 複製進 Skill 資料夾內再壓縮，不是直接照 repo 佈局打包。
+不含 `templates/reference.docx`，Skill 本身不需要它。
+
+上傳：claude.ai 或 Claude Desktop 的 Settings → Features → Skills → Upload。
+Team / Enterprise 帳號需管理員先在組織層級啟用 Skills 功能。
+
+**更新方式與 Claude Code plugin 完全不同**：zip 沒有版本管理，改了 `SKILL.md`
+或模板後必須重新打包、手動重新上傳；已經上傳過的人不會自動拿到新版，需要
+另行通知重新上傳。

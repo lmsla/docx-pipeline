@@ -125,3 +125,28 @@ jobs:
           test -s templates/engineering-note-template.md
           test -s templates/enterprise-sop-template.md
           test -s docs/skill-installation.md
+
+      - name: Build and verify claude.ai Skill zip
+        run: |
+          chmod +x packaging/build-claude-skill-zip.sh
+          packaging/build-claude-skill-zip.sh
+          python - <<'PY'
+          import zipfile
+
+          with zipfile.ZipFile("dist/docx-authoring.zip") as z:
+              names = set(z.namelist())
+              required = {
+                  "docx-authoring/SKILL.md",
+                  "docx-authoring/templates/ai-agent-markdown-rules.md",
+                  "docx-authoring/templates/engineering-note-template.md",
+                  "docx-authoring/templates/enterprise-sop-template.md",
+              }
+              missing = required - names
+              assert not missing, f"missing from zip: {missing}"
+              assert not any("reference.docx" in n for n in names), "reference.docx must not ship in the zip"
+
+              skill_md = z.read("docx-authoring/SKILL.md").decode("utf-8")
+              repo_skill_md = open("skills/docx-authoring/SKILL.md", encoding="utf-8").read()
+              assert skill_md == repo_skill_md, "zipped SKILL.md diverges from repo source"
+          print("claude.ai Skill zip verified")
+          PY
