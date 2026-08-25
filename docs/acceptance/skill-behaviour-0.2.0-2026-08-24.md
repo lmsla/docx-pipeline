@@ -60,7 +60,7 @@ python3 -c "import json;d=json.load(open('$HOME/.claude/plugins/installed_plugin
 |---|---|---|---|---|---|
 | B-01 | Skill 可被發現 | 重啟後開新 session | Skill 清單出現 `docx-pipeline:docx-authoring` | PASS | 與 B-25 重測共用同一次全新 session 觀察：AI 能正確讀取並引用 skill 內容，證明已被發現 |
 | B-02 | 載入版本正確 | 請 AI 說明它讀到的工作流程步驟數 | 應為 8 步，且包含敏感資訊自檢 | PASS | 實際驗證方式更嚴格：AI 逐字引用 description 全文（含 ONLY / Do NOT 兩層限制），與 0.2.2 原檔逐字比對相符，非僅步驟計數 |
-| B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | N/A | 2026-08-24 實測：work/cowork 模式讀取帳號層級 Skills（`/root/.claude/skills/synced/`），不是 Claude Code plugin marketplace（`~/.claude/plugins/`）。兩套機制互不相通，找不到 `docx-authoring` 是預期結果，非缺陷。需另外以 zip 上傳帳號層級 Skills 才能涵蓋此發佈通路，見已知風險 |
+| B-03 | work 模式載入 | 於 work 模式開新 session | 同 B-01 | PASS | 2026-08-24 首測 N/A：work/cowork 模式讀取帳號層級 Skills（`/root/.claude/skills/synced/`），非 Claude Code plugin marketplace，兩套機制互不相通。2026-08-25 完成 `docx-authoring.zip` 封裝並上傳至帳號層級 Skills（Settings → Skills）後，於 claude.ai 一般聊天與 work/cowork 模式分別重測，皆正確回覆 0.2.7 版 description 全文，確認 zip 發佈通路已涵蓋此環境 |
 | B-25 | 中文自然語句可觸發 | 直接說「幫我整理成筆記」，不明確呼叫 Skill | Skill 自動啟動並讀取模板 | PASS（重測後） | 2026-08-24 於全新 session 重測：貼入技術討論但未要求整理，Skill 未觸發，僅接續技術對話並主動詢問「需要的話我可以整理成筆記」；description 修正確認有效 |
 | B-26 | 明確呼叫可觸發 | 改用 `/docx-pipeline:docx-authoring` | Skill 啟動 | PASS | 2026-08-24 實測：正常觸發並完整跑完流程；即使記憶顯示同資料夾其他筆記署名 Russell，仍依規則詢問 author 而非自動代入；正確判斷 distribution: customer 但內容無識別類資訊，無需改代稱。過程中一次 Connection problem，恢復後正確接續完成，判定為環境暫時性問題非邏輯缺陷 |
 
@@ -184,13 +184,17 @@ B-10、B-26、B-04。B-03 實測結果為 N/A：work/cowork 模式使用帳號�
 讀成可以逕自假設為內部。已改為粗體強制句並明文禁止預設值（v0.2.6），重測
 確認修正有效：同一素材這次正確詢問對外與否，並在確認後主動處理主機名代稱。
 
-目前 26 項已驗證，**26 項 PASS、0 項 FAIL、1 項 N/A**（B-03，work 模式需另行
-zip 封裝，不計入 PASS/FAIL）。個人試用通過標準（B-01、B-07、B-12、B-19）
-與團隊推廣通過標準（另加 B-04 至 B-06、B-14 至 B-17、B-22、B-23、B-10、B-18）
-**全數通過**。
+2026-08-25 完成 `packaging/build-claude-skill-zip.sh` 封裝與帳號層級 Skill
+上傳（Settings → Skills），於 claude.ai 一般聊天與 work/cowork 模式分別重測
+B-03，皆正確回覆最新版 description，B-03 由 N/A 轉為 PASS。
 
-**個人日常試用與團隊推廣（Claude Code 範圍內）皆已就緒。** 唯一未涵蓋的是
-work/cowork 模式與 claude.ai 一般聊天，需另行完成 zip 封裝與帳號層級 Skill
-上傳才能涵蓋，屬於獨立的後續工作，不影響 Claude Code 本身的就緒狀態。
-Antigravity 與 Codex 兩個平台的 manifest 存在但未實機驗證，若推廣範圍包含
-這兩者，需另行驗收。
+目前 26 項已驗證，**26 項 PASS、0 項 FAIL、0 項 N/A**。個人試用通過標準
+（B-01、B-07、B-12、B-19）與團隊推廣通過標準（另加 B-04 至 B-06、B-14 至
+B-17、B-22、B-23、B-10、B-18、B-03）**全數通過**。
+
+**個人日常試用、團隊推廣、work/cowork 模式與 claude.ai 一般聊天皆已就緒。**
+Claude Code 走 plugin marketplace，work/cowork 與 claude.ai 聊天走帳號層級
+Skill（zip 上傳），兩條通路已分別驗證。zip 通路的已知限制：無版本管理，
+`SKILL.md` 或模板更新後需重新打包並手動通知使用者重新上傳，見 README「claude.ai
+/ Claude Desktop 一般聊天」章節。Antigravity 與 Codex 兩個平台的 manifest
+存在但未實機驗證，若推廣範圍包含這兩者，需另行驗收。
