@@ -192,7 +192,7 @@ Pandoc 的尋找順序如下：
 | `applicable_audience` | `audience` 的替代欄位 |
 | `numbering` | 預設標題編號 profile |
 
-`title` 未提供時，工具會使用第一個 H1；若仍找不到，使用輸入檔案的檔名 stem。`owner`、`status` 等欄位可保留在文件 metadata，但目前不會自動寫入封面或頁首。
+`title` 未提供時，工具會使用第一個 H1；若仍找不到，使用輸入檔案的檔名 stem。`owner` 等欄位可保留在文件 metadata，但目前不會自動寫入封面或頁首。
 
 `author` 提供時，封面 metadata 表格會多一列「撰寫者」，並同步寫入 DOCX 的 core properties（`author` 與 `last_modified_by`），供 Word 檔案內容頁籤追溯。未提供時封面不產生該列。`validate` 將 `author` 列為共通必要欄位（缺少時回傳 `MD005`）。
 

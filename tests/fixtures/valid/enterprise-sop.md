@@ -7,7 +7,6 @@ version: 1.0
 date: 2026-08-23
 owner: 維護者
 audience: 維運人員
-status: draft
 numbering: deliverable-zh
 ---
 

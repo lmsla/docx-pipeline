@@ -66,7 +66,6 @@ project: 專案名稱
 document_type: 文件類型
 author: 撰寫者姓名
 date: YYYY-MM-DD
-status: draft
 ```
 
 `author` 是文件的追溯依據，必須是撰寫者本人姓名（例如 `Russell`），且**不可由 AI 代為推測**。
@@ -103,7 +102,7 @@ audience: 客戶 / 主管 / 維運人員 / 開發人員
 numbering: deliverable-zh
 ```
 
-Enterprise SOP 的 `version`、`owner`、`audience`、`status` 與 `numbering` 不應省略。日常 Engineering Note 不需要強制套用完整 SOP metadata。
+Enterprise SOP 的 `version`、`owner`、`audience` 與 `numbering` 不應省略。日常 Engineering Note 不需要強制套用完整 SOP metadata。
 
 ## 敏感資訊規則
 

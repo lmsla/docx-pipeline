@@ -7,7 +7,6 @@ version: 1.0
 date: YYYY-MM-DD
 owner: 負責單位或維護者
 audience: 客戶 / 主管 / 維運人員 / 開發人員
-status: draft
 numbering: deliverable-zh
 ---
 

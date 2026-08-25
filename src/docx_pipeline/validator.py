@@ -438,7 +438,7 @@ def validate_markdown(markdown: Path, document_type: str | None = None) -> list[
 
     lines = text.splitlines()
     metadata, body_start, issues = _parse_frontmatter(lines)
-    required_fields = ("title", "project", "document_type", "author", "date", "status")
+    required_fields = ("title", "project", "document_type", "author", "date")
     for field in required_fields:
         if not metadata.get(field):
             issues.append(_issue("MD005", 1, f"frontmatter 缺少必要欄位：{field}"))

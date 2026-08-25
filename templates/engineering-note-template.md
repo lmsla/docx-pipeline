@@ -6,7 +6,6 @@ author: 撰寫者姓名
 date: YYYY-MM-DD
 owner: 負責單位或維護者
 audience: 開發人員 / 維運人員 / 專案成員
-status: draft
 numbering: engineering
 ---
 
