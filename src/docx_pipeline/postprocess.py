@@ -185,11 +185,18 @@ def is_cover_metadata_table(table) -> bool:
     return labels[:5] == expected and (len(labels) == 5 or labels[5] == "撰寫者")
 
 
+def parse_table_width(value: str | None) -> float:
+    try:
+        return float(value or "0")
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def table_geometry_is_usable(table) -> bool:
     column_count = max((len(row.cells) for row in table.rows), default=0)
-    grid_widths = [int(column.get(qn("w:w"), "0")) for column in table._tbl.tblGrid]
+    grid_widths = [parse_table_width(column.get(qn("w:w"))) for column in table._tbl.tblGrid]
     tbl_w = table._tbl.tblPr.find(qn("w:tblW"))
-    table_width = int(tbl_w.get(qn("w:w"), "0")) if tbl_w is not None else 0
+    table_width = parse_table_width(tbl_w.get(qn("w:w"))) if tbl_w is not None else 0
     return (
         column_count > 0
         and len(grid_widths) == column_count

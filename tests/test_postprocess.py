@@ -62,6 +62,17 @@ class TableGeometryTest(unittest.TestCase):
             [3000, 4920],
         )
 
+    def test_decimal_zero_geometry_is_repaired(self):
+        doc = Document()
+        table = doc.add_table(rows=2, cols=2)
+        for column in table._tbl.tblGrid:
+            column.set(qn("w:w"), "0.0")
+        table._tbl.tblPr.find(qn("w:tblW")).set(qn("w:w"), "0.0")
+
+        normalize_tables(doc)
+
+        self.assertTrue(all(int(column.get(qn("w:w"))) > 0 for column in table._tbl.tblGrid))
+
 
 if __name__ == "__main__":
     unittest.main()
