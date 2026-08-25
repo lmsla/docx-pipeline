@@ -3,7 +3,7 @@ title: docx-authoring Skill 於 Claude Code 安裝作業手冊
 project: docx-pipeline
 document_type: SOP
 author: Russell
-version: 1.1
+version: 1.2
 date: 2026-08-25
 owner: docx-pipeline 維護者
 audience: 開發人員 / 維運人員
@@ -17,6 +17,7 @@ numbering: engineering
 |---|---|---|---|
 | 2026-08-25 | 1.0 | 初版 | Russell |
 | 2026-08-25 | 1.1 | 補充 Team/Enterprise 管理員限制與驗證步驟 | Russell |
+| 2026-08-25 | 1.2 | 補充斜線指令與 shell 指令的差異，修正實際安裝時發現的 `zsh: no such file or directory: /plugin` 錯誤 | Russell |
 
 # 文件說明
 
@@ -123,14 +124,33 @@ Claude Code
 
 ### 操作方式
 
-在 Claude Code 的互動介面依序執行：
+`/plugin ...` 是 `claude` 互動介面裡的斜線指令，**不是一般 shell 指令**——直接在
+終端機提示字元（例如 `~/workspace/skill-test>`）打 `/plugin ...` 會被 shell
+當成絕對路徑執行，回報 `no such file or directory`。兩種正確做法擇一：
+
+**方式一：先進入 `claude`，在裡面打斜線指令**
+
+```bash
+claude
+```
+
+進入互動介面後執行：
 
 ```text
 /plugin marketplace add lmsla/docx-pipeline
 /plugin install docx-pipeline@docx-pipeline-marketplace
 ```
 
-安裝 Plugin 時選擇 `User scope`。
+**方式二：在終端機直接下 CLI 指令，不需要先進互動介面**
+
+```bash
+claude plugin marketplace add lmsla/docx-pipeline --scope user
+claude plugin install docx-pipeline@docx-pipeline-marketplace --scope user
+```
+
+兩者效果相同，方式二的開頭是 `claude` 執行檔本身、沒有斜線。
+
+安裝 Plugin 時選擇 `User scope`（方式二已在指令中以 `--scope user` 指定）。
 
 ### 預期結果
 
@@ -145,6 +165,7 @@ Claude Code
 |---|---|---|
 | 兩則訊息皆顯示成功 | 可繼續 | 進入步驟二 |
 | 找不到 marketplace 或 clone 失敗 | 不可繼續 | 依常見問題「問題一」排除 |
+| `zsh: no such file or directory: /plugin` | 不可繼續 | 在裸的 shell 提示字元下直接打了斜線指令；改用上方方式一或方式二 |
 
 ### 注意事項
 
