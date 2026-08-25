@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 set -euo pipefail
 
 # 打包 docx-authoring 成可上傳至 claude.ai / Claude Desktop 帳號層級 Skills 的 zip。
