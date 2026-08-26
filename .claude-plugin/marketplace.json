@@ -9,7 +9,7 @@
       "name": "docx-pipeline",
       "source": ".",
       "description": "Create Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery.",
-      "version": "0.2.7",
+      "version": "0.2.8",
       "repository": "https://github.com/lmsla/docx-pipeline",
       "category": "documentation",
       "tags": [
