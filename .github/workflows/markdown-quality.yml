@@ -60,7 +60,9 @@ jobs:
           assert marketplace["name"] == "docx-pipeline-marketplace"
           entries = [item for item in marketplace["plugins"] if item["name"] == "docx-pipeline"]
           assert len(entries) == 1
-          assert entries[0]["source"] == "."
+          # claude.ai 的 marketplace sync 要求相對路徑 source 以 "./" 開頭；
+          # Claude Code CLI 接受裸的 "."，違反時只有 chat / Cowork 端會失敗。
+          assert entries[0]["source"].startswith("./"), entries[0]["source"]
           assert entries[0]["version"] == plugin["version"]
           PY
 

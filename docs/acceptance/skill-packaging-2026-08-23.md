@@ -17,7 +17,7 @@ status: ready-for-persistent-installation-validation
 - Antigravity：`plugin.json`
 - Codex：`.codex-plugin/plugin.json`
 - 共用 Skill：`skills/docx-authoring/SKILL.md`
-- 共用規則與模板：`templates/`
+- 共用規則與模板：`skills/docx-authoring/templates/`（2026-09-10 由 repo root 移入）
 - 安裝與驗收說明：`docs/skill-installation.md`
 - CI 靜態檢查：`.github/workflows/markdown-quality.yml`
 
@@ -30,8 +30,11 @@ status: ready-for-persistent-installation-validation
 | 共用 Skill 不觸發 CLI/DOCX | READY | Skill 工作流程已移除 CLI 執行步驟 |
 | Claude Code 本地開發載入 | PASS | 使用者已確認 `/docx-pipeline:docx-authoring` 可被發現；此前缺少模板的 clone 需更新 |
 | Claude Code private Marketplace 持久安裝 | PENDING | 待使用者以 User scope 安裝並重啟驗證 |
-| Antigravity 實機安裝 | PENDING | 待使用者測試 |
-| Codex 實機安裝 | PENDING | 待後續測試 |
+| Antigravity manifest 符合官方 schema | PASS | 2026-09-10 對照官方文件核對：schema `additionalProperties: false`，僅允許 `name`、`description`、`$schema`，`name` 必填。現行 `plugin.json` 三個欄位皆合規 |
+| Codex manifest 符合官方 spec | PASS | 2026-09-10 對照 plugin-json-spec 核對：`.codex-plugin/plugin.json` 為官方支援的 compatibility fallback；`interface` 四個必填欄位齊備；`defaultPrompt` 原為字串，已修正為陣列（上限 3 筆、每筆 128 字元） |
+| 模板路徑跨平台可解析 | PASS | 2026-09-10 模板移入 `skills/docx-authoring/templates/`。兩平台官方文件皆明載 `skills/` 會保留，未載明自訂目錄行為，改後不再依賴未載明行為 |
+| Antigravity 實機安裝 | PENDING | 需人工測試。官方安裝指令為 `agy plugin install /path/to/local/plugin`，文件未載明從 GitHub 遠端安裝的方式 |
+| Codex 實機安裝 | PENDING | 需人工測試。官方文件記載的本地安裝方式為：複製 plugin 資料夾到 `$REPO_ROOT/plugins/<name>`、更新 `$REPO_ROOT/.agents/plugins/marketplace.json`、重啟 ChatGPT 桌面版 |
 
 # 通過標準
 
