@@ -121,9 +121,9 @@ jobs:
 
       - name: Check Skill resources
         run: |
-          test -s templates/ai-agent-markdown-rules.md
-          test -s templates/engineering-note-template.md
-          test -s templates/enterprise-sop-template.md
+          test -s skills/docx-authoring/templates/ai-agent-markdown-rules.md
+          test -s skills/docx-authoring/templates/engineering-note-template.md
+          test -s skills/docx-authoring/templates/enterprise-sop-template.md
           test -s docs/skill-installation.md
 
       - name: Build and verify claude.ai Skill zip

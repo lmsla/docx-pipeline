@@ -9,9 +9,9 @@ Markdown -> pandoc 套 reference.docx -> python-docx 後處理 -> output.docx
 ## 文件入口
 
 - [整合規格](docs/spec.md)：CLI、Markdown、DOCX、模板、打包與整合契約
-- [AI agent Markdown 規則](templates/ai-agent-markdown-rules.md)：筆記與 SOP 的撰寫規則
-- [工程筆記模板](templates/engineering-note-template.md)：技術筆記、調查與決策紀錄
-- [企業 SOP 模板](templates/enterprise-sop-template.md)：可直接複製使用的文件骨架
+- [AI agent Markdown 規則](skills/docx-authoring/templates/ai-agent-markdown-rules.md)：筆記與 SOP 的撰寫規則
+- [工程筆記模板](skills/docx-authoring/templates/engineering-note-template.md)：技術筆記、調查與決策紀錄
+- [企業 SOP 模板](skills/docx-authoring/templates/enterprise-sop-template.md)：可直接複製使用的文件骨架
 - [Claude Code Skill](skills/docx-authoring/SKILL.md)：引導 AI 選擇模板與整理文件
 - [三平台 Skill 安裝與驗收](docs/skill-installation.md)：Claude Code、Antigravity、Codex 的封裝與範圍
 - [Claude Code 安裝作業手冊](docs/claude-code-install-sop.md)：給同事的安裝、驗證與排錯步驟

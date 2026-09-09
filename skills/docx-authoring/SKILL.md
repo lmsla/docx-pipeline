@@ -31,11 +31,13 @@ DOCX 轉換由使用者的平台或 CI 在此工作流程之外處理。
    - 兩種類型不得混用同一份文件的模板。
    參考分類：技術筆記、調查、決策、工作進度通常適用 Engineering Note；
    部署、操作、驗證、客戶或主管交付通常適用 Enterprise SOP。
-3. 讀取 Plugin 隨附的 `templates/ai-agent-markdown-rules.md`。
+3. 讀取與本檔同一層的 `templates/ai-agent-markdown-rules.md`。
 4. 再讀取選定的模板：
    - `templates/engineering-note-template.md`
    - `templates/enterprise-sop-template.md`
-   Claude Code 可透過 `${CLAUDE_PLUGIN_ROOT}` 定位 Plugin root；Antigravity 與 Codex 應從已安裝 Plugin 的 root 定位同一個 `templates/` 目錄；帳號層級 Skill（zip 上傳至 claude.ai / Claude Desktop）則 `templates/` 位於 Skill 資料夾本身之下，不需要額外的 root 變數。若找不到隨附模板，停止整理並回報，不要自行重建規則。
+   這三個檔案都放在 SKILL.md 隔壁的 `templates/` 目錄下，四種安裝方式（Claude Code
+   plugin、Antigravity、Codex、claude.ai 帳號層級 Skill）的相對位置一致，不需要
+   平台專屬的 root 變數。若找不到隨附模板，停止整理並回報，不要自行重建規則。
 5. 確認 `author`（撰寫者姓名），這是文件的追溯依據，必須在動筆前取得。依序判斷：
    - 使用者在本次對話中已表明姓名或署名意圖，直接採用。
    - 正在修訂既有文件且其 frontmatter 已有 `author`，沿用原值，不要擅自改寫。

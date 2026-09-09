@@ -8,9 +8,9 @@
 
 ```text
 skills/docx-authoring/SKILL.md
-templates/ai-agent-markdown-rules.md
-templates/engineering-note-template.md
-templates/enterprise-sop-template.md
+skills/docx-authoring/templates/ai-agent-markdown-rules.md
+skills/docx-authoring/templates/engineering-note-template.md
+skills/docx-authoring/templates/enterprise-sop-template.md
 ```
 
 Skill 必須讀取 Plugin 隨附的模板與規則，不應依賴使用者工作目錄中可能同名的未管理文件。
@@ -76,7 +76,7 @@ claude plugin update docx-pipeline@docx-pipeline-marketplace
 `marketplace update` 只刷新 Marketplace 目錄。已安裝的 Plugin 是否重新取得內容，
 取決於 manifest 的 `version` 是否改變；commit 變了但版本沒變時，使用者端不會更新。
 
-因此**修改 `skills/docx-authoring/SKILL.md` 或 `templates/*.md` 時必須同步升版**，
+因此**修改 `skills/docx-authoring/` 底下任何檔案時必須同步升版**，
 否則變更不會傳播到任何已安裝的環境。版本共有六處，必須一致（CI 會檢查）：
 
 ```text
@@ -105,23 +105,27 @@ src/docx_pipeline/__init__.py
 
 ### Antigravity
 
-使用 repo 根目錄的 `plugin.json` 作為 Antigravity Plugin manifest，Skill 位於：
+使用 repo 根目錄的 `plugin.json` 作為 Antigravity Plugin manifest。官方 schema
+（[docs](https://antigravity.google/docs/cli/plugins/)）為 `additionalProperties: false`，
+只允許 `name`、`description` 與 `$schema` 三個欄位，`name` 為必填，因此該檔案不得
+加入 `version`、`author` 等欄位。
 
-```text
-skills/docx-authoring/SKILL.md
-```
-
-也可以將 Skill 放在目標工作區的 `.agents/skills/docx-authoring/` 進行 workspace scope 測試，但必須同時讓 Skill 能讀取 repo root 的 `templates/` 資源。
+官方記載的 Plugin 目錄結構為 `plugin.json`、`mcp_config.json`、`hooks.json`、
+`skills/`、`agents/`、`rules/`；**未載明**自訂目錄是否保留，因此 Skill 所需的模板
+放在 `skills/docx-authoring/templates/`，只依賴文件明載會保留的 `skills/`。
 
 ### Codex
 
-使用 `.codex-plugin/plugin.json` 作為 Codex Plugin manifest，Skill 位於：
+現行推薦格式是根目錄 `plugin.json` 搭配 `extensions.com.openai`（Agent Plugins
+標準，schema `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`）；
+`.codex-plugin/plugin.json` 官方定位為 compatibility fallback，仍受支援。
 
-```text
-skills/docx-authoring/SKILL.md
-```
+本 repo 採用 `.codex-plugin/plugin.json`，因為根目錄 `plugin.json` 已被 Antigravity
+的 schema 佔用，而兩份 schema 互斥（各自 `additionalProperties: false` 且綁定不同的
+`$schema` 值），無法以同一個檔案同時滿足。
 
-Codex 的 marketplace 或工作區安裝設定由使用環境管理，不應寫入 Skill 內容，也不應因此複製模板。
+Codex 官方記載會保留的根層路徑為 `plugin.json`、`mcp.json`、`skills/`、`assets/`，
+同樣未載明自訂目錄，模板位置的處理方式與 Antigravity 相同。
 
 ## Skill 工作範圍
 

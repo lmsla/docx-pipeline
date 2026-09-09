@@ -451,9 +451,9 @@ repo 同時提供 Claude Code、Antigravity 與 Codex 的 Skill / Plugin manifes
 plugin.json
 .codex-plugin/plugin.json
 skills/docx-authoring/SKILL.md
-templates/ai-agent-markdown-rules.md
-templates/engineering-note-template.md
-templates/enterprise-sop-template.md
+skills/docx-authoring/templates/ai-agent-markdown-rules.md
+skills/docx-authoring/templates/engineering-note-template.md
+skills/docx-authoring/templates/enterprise-sop-template.md
 ```
 
 Skill 只負責選擇文件類型、載入規則與整理 Markdown。它不應複製模板、不應執行 CLI、不應產出 DOCX，也不應宣稱已完成未執行的驗證。`validate` 與 `build` 屬於使用者或 CI 的下游流程，不是 AI agent Skill 的責任。
@@ -517,9 +517,9 @@ Claude Code 的 `.claude-plugin/marketplace.json` 是持久安裝入口。正式
 |---|---|
 | `README.md` | 快速安裝、執行與打包說明 |
 | `docs/spec.md` | CLI、輸入、輸出、部署與整合契約 |
-| `templates/ai-agent-markdown-rules.md` | AI agent 撰寫 Markdown 的規則 |
-| `templates/engineering-note-template.md` | 技術筆記、調查與決策紀錄模板 |
-| `templates/enterprise-sop-template.md` | SOP / 交付文件的 Markdown 起始模板 |
+| `skills/docx-authoring/templates/ai-agent-markdown-rules.md` | AI agent 撰寫 Markdown 的規則 |
+| `skills/docx-authoring/templates/engineering-note-template.md` | 技術筆記、調查與決策紀錄模板 |
+| `skills/docx-authoring/templates/enterprise-sop-template.md` | SOP / 交付文件的 Markdown 起始模板 |
 | `templates/reference.docx` | Word 視覺樣式與企業模板 |
 | `src/docx_pipeline/validator.py` | Markdown 結構與資產驗證 |
 | `.claude-plugin/plugin.json` | Claude Code Plugin metadata |

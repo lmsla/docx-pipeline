@@ -1,6 +1,6 @@
 {
   "name": "docx-pipeline",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "Create structured Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery.",
   "author": {
     "name": "docx-pipeline maintainers"
@@ -15,6 +15,10 @@
     "capabilities": [
       "Write"
     ],
-    "defaultPrompt": "整理這段技術討論，依 docx-pipeline Markdown 規則產出文件。"
+    "defaultPrompt": [
+      "整理這段技術討論，產出 Engineering Note。",
+      "把這段流程寫成 Enterprise SOP。",
+      "校訂這份 Markdown，使其符合轉檔規範。"
+    ]
   }
 }
