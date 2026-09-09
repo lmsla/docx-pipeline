@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "docx-pipeline",
-      "source": ".",
+      "source": "./",
       "description": "Create Engineering Note and Enterprise SOP Markdown for downstream DOCX delivery.",
       "version": "0.2.8",
       "repository": "https://github.com/lmsla/docx-pipeline",
