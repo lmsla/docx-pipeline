@@ -115,7 +115,7 @@ GitHub Actions workflow 位於 `.github/workflows/markdown-quality.yml`，會執
 開發或調整程式碼時，可使用 repo 內的 wrapper：
 
 ```bash
-bin/docx-pipeline build examples/manual.md -o outputs/manual.docx
+scripts/docx-pipeline build examples/manual.md -o outputs/manual.docx
 ```
 
 開發模式仍會優先使用 repo 內的 `templates/reference.docx`，並從 PATH 尋找 Pandoc。

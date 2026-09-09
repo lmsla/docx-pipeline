@@ -409,7 +409,7 @@ macOS release package 內建一份 `reference.docx`。搬移或交付 release �
 開發模式使用 repo wrapper：
 
 ```bash
-bin/docx-pipeline build examples/manual.md -o outputs/manual.docx
+scripts/docx-pipeline build examples/manual.md -o outputs/manual.docx
 ```
 
 需要 Python `>=3.9`、`python-docx` 與 Pandoc。Python virtual environment 只影響開發模式，不是 release 使用者的必要條件。
