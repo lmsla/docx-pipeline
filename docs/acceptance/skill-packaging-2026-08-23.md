@@ -34,7 +34,8 @@ status: ready-for-persistent-installation-validation
 | Codex manifest 符合官方 spec | PASS | 2026-09-10 對照 plugin-json-spec 核對：`.codex-plugin/plugin.json` 為官方支援的 compatibility fallback；`interface` 四個必填欄位齊備；`defaultPrompt` 原為字串，已修正為陣列（上限 3 筆、每筆 128 字元） |
 | 模板路徑跨平台可解析 | PASS | 2026-09-10 模板移入 `skills/docx-authoring/templates/`。兩平台官方文件皆明載 `skills/` 會保留，未載明自訂目錄行為，改後不再依賴未載明行為 |
 | Antigravity 實機安裝 | PENDING | 需人工測試。官方安裝指令為 `agy plugin install /path/to/local/plugin`，文件未載明從 GitHub 遠端安裝的方式 |
-| Codex 實機安裝 | PENDING | 需人工測試。官方文件記載的本地安裝方式為：複製 plugin 資料夾到 `$REPO_ROOT/plugins/<name>`、更新 `$REPO_ROOT/.agents/plugins/marketplace.json`、重啟 ChatGPT 桌面版 |
+| Codex marketplace 新增 | PASS | 2026-09-10 使用者於 Codex 桌面版 Plugins → Add → Add plugin marketplace，Source 填 `lmsla/docx-pipeline`（Git ref 與 Sparse paths 留空）新增成功。同時證實 `.agents/plugins/marketplace.json` 中 `source.path: "./"`（plugin 即 repo 根目錄）可被接受——官方範例只示範子目錄寫法，此為實測結果 |
+| Codex Skill 實際觸發 | PENDING | marketplace 新增成功不等於 skill 可用。待在 Codex 新 thread 中確認 `docx-authoring` 會被載入並正確觸發 |
 
 # 通過標準
 

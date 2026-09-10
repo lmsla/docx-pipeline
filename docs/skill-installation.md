@@ -127,6 +127,13 @@ src/docx_pipeline/__init__.py
 Codex 官方記載會保留的根層路徑為 `plugin.json`、`mcp.json`、`skills/`、`assets/`，
 同樣未載明自訂目錄，模板位置的處理方式與 Antigravity 相同。
 
+Marketplace 檔案為 `.agents/plugins/marketplace.json`，其中 `source.path` 為 `"./"`
+（plugin 即 repo 根目錄）。2026-09-10 實測可用。
+
+安裝方式（2026-09-10 實測成功）：Codex 桌面版 **Plugins → Add → Add plugin
+marketplace**，Source 填 `lmsla/docx-pipeline`，Git ref 與 Sparse paths 留空。
+CLI 等效指令為 `codex plugin marketplace add lmsla/docx-pipeline`（未實測）。
+
 ## Skill 工作範圍
 
 Skill 可以：
